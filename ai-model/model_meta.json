@@ -1,0 +1,27 @@
+{
+  "model_name": "NRIIT Smart Transit Random Forest Predictor",
+  "pilot_college": "NRI Institute of Technology (NRIIT)",
+  "r2_score": 0.9544,
+  "mae": 2.17,
+  "features": [
+    "route_id",
+    "hour",
+    "day_of_week",
+    "attendance_pct",
+    "capacity",
+    "current_occupancy",
+    "stop_waiting_total",
+    "is_morning_peak"
+  ],
+  "feature_importances": {
+    "route_id": 0.0183,
+    "hour": 0.0248,
+    "day_of_week": 0.0098,
+    "attendance_pct": 0.0636,
+    "capacity": 0.0244,
+    "current_occupancy": 0.1337,
+    "stop_waiting_total": 0.7075,
+    "is_morning_peak": 0.018
+  },
+  "version": "1.0.0-hackathon"
+}

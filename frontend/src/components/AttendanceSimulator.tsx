@@ -1,0 +1,187 @@
+import React from 'react';
+import { Sliders, Sparkles, TrendingUp, AlertTriangle, CheckCircle, ArrowRight } from 'lucide-react';
+
+interface AttendanceSimulatorProps {
+  currentAttendance: number;
+  onSimulate: (percentage: number) => void;
+  predictedDemand: number;
+  capacity: number;
+  riskLevel: 'SAFE' | 'MODERATE' | 'HIGH';
+  isCompact?: boolean;
+}
+
+export const AttendanceSimulator: React.FC<AttendanceSimulatorProps> = ({
+  currentAttendance,
+  onSimulate,
+  predictedDemand,
+  capacity,
+  riskLevel,
+  isCompact = false
+}) => {
+  const presets = [
+    { label: '70% Rain / Sparse', pct: 70, tag: 'MODERATE' },
+    { label: '80% Normal Tuesday', pct: 80, tag: 'SAFE' },
+    { label: '90% Lab Day', pct: 90, tag: 'HIGH' },
+    { label: '94% Current Peak', pct: 94, tag: 'OVERCROWDED' },
+    { label: '98% Mid-Term Exams', pct: 98, tag: 'CRITICAL' }
+  ];
+
+  const occupancyPct = Math.round((predictedDemand / capacity) * 100);
+
+  if (isCompact) {
+    return (
+      <div className="bg-gradient-to-r from-blue-900 to-slate-900 text-white p-3 rounded-xl border border-blue-800/60 shadow-sm flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <Sliders className="w-4 h-4 text-blue-400" />
+          <span className="text-xs font-bold uppercase tracking-wider text-blue-200">
+            Attendance Simulator:
+          </span>
+          <span className="text-xs font-mono font-bold bg-blue-800/80 px-2 py-0.5 rounded text-amber-300">
+            {currentAttendance}% Attendance
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {presets.map((p) => (
+            <button
+              key={p.pct}
+              onClick={() => onSimulate(p.pct)}
+              className={`text-xs px-2.5 py-1 rounded-md transition font-medium ${
+                currentAttendance === p.pct
+                  ? 'bg-blue-600 text-white font-bold ring-2 ring-blue-300'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+              }`}
+            >
+              {p.pct}%
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-slate-300">Route 1 AI Forecast:</span>
+          <span
+            className={`font-bold px-2 py-0.5 rounded text-[11px] ${
+              riskLevel === 'HIGH'
+                ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+                : riskLevel === 'MODERATE'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+            }`}
+          >
+            {predictedDemand} / {capacity} ({occupancyPct}%) • {riskLevel}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white rounded-2xl border border-blue-200 p-5 shadow-xs relative overflow-hidden">
+      <div className="absolute top-0 right-0 bg-blue-100 text-blue-800 text-[10px] font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider border-b border-l border-blue-200 flex items-center gap-1">
+        <Sparkles className="w-3 h-3 text-blue-600" />
+        Simulated AI Prediction Loop
+      </div>
+
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-slate-900 font-['Outfit']">
+              Demo Attendance Simulator
+            </h3>
+            <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">
+              Interactive What-If Engine
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Test how real-time classroom attendance percentages propagate into the AI bus overcrowding model.
+          </p>
+        </div>
+
+        {/* Live Outcome Badge */}
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-[11px] text-slate-400 font-medium">Route 1 Predicted Occupancy</p>
+            <p className="text-lg font-extrabold text-slate-900 font-mono">
+              {predictedDemand} <span className="text-xs font-normal text-slate-500">/ {capacity} seats</span>
+              <span className={`ml-2 text-sm font-bold ${riskLevel === 'HIGH' ? 'text-red-600' : riskLevel === 'MODERATE' ? 'text-amber-600' : 'text-emerald-600'}`}>
+                ({occupancyPct}%)
+              </span>
+            </p>
+          </div>
+          <div className={`p-2.5 rounded-xl border ${
+            riskLevel === 'HIGH' ? 'bg-red-50 border-red-200 text-red-600' : riskLevel === 'MODERATE' ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600'
+          }`}>
+            {riskLevel === 'HIGH' ? <AlertTriangle className="w-6 h-6 animate-bounce" /> : riskLevel === 'MODERATE' ? <TrendingUp className="w-6 h-6" /> : <CheckCircle className="w-6 h-6" />}
+          </div>
+        </div>
+      </div>
+
+      {/* Interactive Controls */}
+      <div className="mt-4 space-y-3">
+        <div className="flex items-center justify-between text-xs font-semibold">
+          <span className="text-slate-700">Simulate Overall Campus Attendance:</span>
+          <span className="text-blue-700 font-mono text-sm bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+            {currentAttendance}% Attendance
+          </span>
+        </div>
+
+        {/* Range Slider */}
+        <input
+          type="range"
+          min="60"
+          max="99"
+          value={currentAttendance}
+          onChange={(e) => onSimulate(Number(e.target.value))}
+          className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+        />
+
+        {/* Quick Preset Buttons */}
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+          {presets.map((p) => {
+            const isSelected = currentAttendance === p.pct;
+            return (
+              <button
+                key={p.pct}
+                onClick={() => onSimulate(p.pct)}
+                className={`px-3 py-2 rounded-xl text-left border transition-all text-xs ${
+                  isSelected
+                    ? 'border-blue-600 bg-blue-50/80 shadow-xs ring-1 ring-blue-500'
+                    : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-extrabold text-slate-900 font-mono text-sm">{p.pct}%</span>
+                  <span className={`text-[9px] font-bold px-1 rounded ${
+                    p.tag === 'CRITICAL' || p.tag === 'OVERCROWDED' ? 'bg-red-100 text-red-700' : p.tag === 'HIGH' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
+                  }`}>
+                    {p.tag}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500 truncate mt-0.5">{p.label}</p>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Attendance-to-Transit Pipeline Indicator */}
+        <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-[11px] text-slate-600 gap-2 bg-slate-50 p-2.5 rounded-xl">
+          <div className="flex items-center gap-1 font-semibold text-slate-700">
+            <span>Flow:</span>
+            <span className="text-blue-700 font-bold">ATTENDANCE ({currentAttendance}%)</span>
+            <ArrowRight className="w-3 h-3 text-slate-400" />
+            <span className="text-indigo-700 font-bold">TRAVEL INFLUX</span>
+            <ArrowRight className="w-3 h-3 text-slate-400" />
+            <span className="text-purple-700 font-bold">ROUTE 1 DEMAND ({predictedDemand})</span>
+            <ArrowRight className="w-3 h-3 text-slate-400" />
+            <span className={`font-bold ${riskLevel === 'HIGH' ? 'text-red-600' : 'text-emerald-600'}`}>
+              {riskLevel === 'HIGH' ? 'OVERCROWD RISK ⚠' : 'BALANCED OCCUPANCY ✓'}
+            </span>
+          </div>
+          <span className="text-[10px] text-slate-400 italic">
+            Dynamic inference refreshed in &lt;12ms
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+};

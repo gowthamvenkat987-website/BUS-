@@ -1,0 +1,82 @@
+{
+  "activeSessions": [
+    {
+      "id": "sess-cse-a-01",
+      "sessionToken": "NRIIT-ATT-2026-CSEA-9812",
+      "department": "CSE",
+      "year": "III",
+      "section": "A",
+      "subject": "Deep Learning & AI Applications (CS312)",
+      "period": "Period 1 (08:45 AM - 09:45 AM)",
+      "room": "Room 304, APJ Abdul Kalam Block",
+      "facultyId": "fac-01",
+      "facultyName": "Dr. K. Srinivas (HOD CSE)",
+      "totalStudents": 60,
+      "presentCount": 54,
+      "attendancePct": 90,
+      "createdAt": "2026-09-26T08:45:00.000Z",
+      "expiresAt": "2026-09-26T10:30:00.000Z",
+      "status": "Active"
+    },
+    {
+      "id": "sess-ece-b-02",
+      "sessionToken": "NRIIT-ATT-2026-ECEB-4190",
+      "department": "ECE",
+      "year": "III",
+      "section": "B",
+      "subject": "Embedded Systems & IoT (EC314)",
+      "period": "Period 1 (08:45 AM - 09:45 AM)",
+      "room": "Room 202, Visvesvaraya Block",
+      "facultyId": "fac-02",
+      "facultyName": "Prof. P. Lakshmi Devi",
+      "totalStudents": 60,
+      "presentCount": 56,
+      "attendancePct": 93,
+      "createdAt": "2026-09-26T08:45:00.000Z",
+      "expiresAt": "2026-09-26T10:30:00.000Z",
+      "status": "Active"
+    }
+  ],
+  "demoStudents": [
+    {
+      "id": "std-01",
+      "rollNumber": "21NR1A0501",
+      "name": "B. Sai Teja",
+      "email": "saiteja.21@nriit.edu.in",
+      "department": "CSE",
+      "section": "A",
+      "registeredRoute": "Route 1",
+      "boardingStop": "Chinna Kakani"
+    },
+    {
+      "id": "std-02",
+      "rollNumber": "21NR1A0502",
+      "name": "Ch. Mounika",
+      "email": "mounika.21@nriit.edu.in",
+      "department": "CSE",
+      "section": "A",
+      "registeredRoute": "Route 1",
+      "boardingStop": "Kaza"
+    },
+    {
+      "id": "std-03",
+      "rollNumber": "21NR1A0503",
+      "name": "G. Rahul Varma",
+      "email": "rahul.21@nriit.edu.in",
+      "department": "CSE",
+      "section": "A",
+      "registeredRoute": "Route 1",
+      "boardingStop": "Koppuravuru"
+    },
+    {
+      "id": "std-04",
+      "rollNumber": "21NR1A0415",
+      "name": "M. Divya Sri",
+      "email": "divyasri.21@nriit.edu.in",
+      "department": "ECE",
+      "section": "B",
+      "registeredRoute": "Route 2",
+      "boardingStop": "Ramavarappadu Ring"
+    }
+  ]
+}
