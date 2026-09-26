@@ -1,5 +1,5 @@
 """
-NRIIT Smart Transit — AI Prediction Microservice
+NRI University Bus — AI Prediction Microservice
 Runs on Port 5001 (Flask)
 Exposes:
 - GET  /api/health
@@ -43,7 +43,7 @@ load_model()
 def health():
     return jsonify({
         "status": "online",
-        "service": "NRIIT Smart Transit AI Engine",
+        "service": "NRI University Bus AI Engine",
         "pilotCollege": "NRI Institute of Technology (Pothavarappadu, Vijayawada)",
         "modelLoaded": rf_model is not None,
         "metrics": model_meta.get("r2_score", 0.942)
@@ -144,5 +144,5 @@ def predict():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5001))
-    print(f"Starting NRIIT Smart Transit AI Microservice on port {port}...")
+    print(f"Starting NRI University Bus AI Microservice on port {port}...")
     app.run(host="0.0.0.0", port=port, debug=False)

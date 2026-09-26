@@ -63,7 +63,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'recommendations', label: 'Recommendations', icon: Lightbulb, badge: pendingRecCount > 0 ? `${pendingRecCount} Action` : null, badgeColor: 'bg-amber-100 text-amber-800' },
     { id: 'analytics', label: 'Analytics', icon: BarChart3, badge: null },
     { id: 'bus-management', label: 'Bus Management', icon: Bus, badge: 'Fleet' },
-    { id: 'bus-allocation', label: 'Smart Bus Allocation', icon: ArrowRightLeft, badge: 'AI Action', badgeColor: 'bg-blue-100 text-blue-800 font-bold' },
+    { id: 'bus-allocation', label: 'NRI University Bus Allocation', icon: ArrowRightLeft, badge: 'AI Action', badgeColor: 'bg-blue-100 text-blue-800 font-bold' },
     { id: 'settings', label: 'Settings & Scope', icon: Settings, badge: null }
   ];
 
@@ -80,10 +80,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-4 border-b border-slate-800 flex items-center justify-between shrink-0">
         <div>
           <div className="text-[11px] font-bold uppercase tracking-wider text-blue-400">
-            NRIIT
+            NRI
           </div>
           <div className="text-sm font-extrabold text-white tracking-wide font-['Outfit']">
-            SMART TRANSIT
+            UNIVERSITY BUS
           </div>
         </div>
         <div className="flex items-center gap-2">

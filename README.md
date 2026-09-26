@@ -1,4 +1,4 @@
-# NRIIT Smart Transit — AI-Powered College Bus Overcrowding & Demand Prediction System
+# NRI University Bus — AI-Powered College Bus Overcrowding & Demand Prediction System
 
 > **Institution:**  
 > **NRI Institute of Technology (NRIIT)**  
@@ -16,7 +16,7 @@
 5. [Route-First Architecture](#route-first-architecture)
 6. [QR Attendance & Security Protocol](#qr-attendance--security-protocol)
 7. [AI Prediction Model & Explainable AI (XAI)](#ai-prediction-model--explainable-ai-xai)
-8. [NRIIT Smart Bus Allocation Engine](#nriit-smart-bus-allocation-engine)
+8. [NRI University Bus Allocation Engine](#nri-university-bus-allocation-engine)
 9. [12-Step Hackathon Demonstration Flow](#12-step-hackathon-demonstration-flow)
 10. [Database Schema (Supabase Compatible)](#database-schema-supabase-compatible)
 11. [Technology Stack](#technology-stack)
@@ -29,7 +29,7 @@
 
 ## 🚀 Executive Summary
 
-**NRIIT Smart Transit** is an intelligent campus mobility and overcrowding management platform engineered exclusively for **NRI Institute of Technology (NRIIT)** in Vijayawada, Andhra Pradesh.
+**NRI University Bus** is an intelligent campus mobility and overcrowding management platform engineered exclusively for **NRI Institute of Technology (NRIIT)** in Vijayawada, Andhra Pradesh.
 
 College transportation systems frequently suffer from uneven, volatile passenger demand across routes and stops. Morning lab attendance, examination schedules, and timetable dismissals create acute bottlenecks that static bus schedules cannot handle.
 
@@ -64,7 +64,7 @@ flowchart TD
     E --> F[Corridor Demand Forecast]
     F --> G[Overcrowding Risk Assessment]
     G --> H[Explainable AI Attribution]
-    H --> I[Smart Bus Allocation Engine]
+    H --> I[NRI University Bus Allocation Engine]
     I --> J[Dispatch Nearby Support Bus]
 ```
 
@@ -143,7 +143,7 @@ Attendance serves as the primary data trigger for AI demand forecasting.
 
 ---
 
-## 🚌 NRIIT Smart Bus Allocation Engine
+## 🚌 NRI University Bus Allocation Engine
 
 Under normal conditions, NRIIT has enough buses to handle all students. When a particular corridor or bus is predicted to become full or overcrowded:
 
@@ -169,7 +169,7 @@ Under normal conditions, NRIIT has enough buses to handle all students. When a p
 ## 🏆 12-Step Hackathon Demonstration Flow
 
 The end-to-end operational flow follows this 12-step lifecycle:
-1. *Admin opens NRIIT Smart Transit Command Center*
+1. *Admin opens NRI University Bus Command Center*
 2. *Dashboard displays transport baseline (8 active buses, Route 1 occupancy 86%)*
 3. *Faculty opens Attendance Management*
 4. *Faculty generates temporary QR session for CSE-A with countdown timer*
@@ -220,7 +220,7 @@ c:\Users\GOWTHAM\OneDrive\Desktop\project file\
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Header.tsx        # NRIIT identity, dropdowns & alerts
-│   │   │   ├── Sidebar.tsx       # 13 navigation tabs including Smart Bus Allocation
+│   │   │   ├── Sidebar.tsx       # 14 navigation tabs including NRI University Bus Allocation
 │   │   │   ├── InteractiveMap.tsx# Simulated GPS telemetry map along NH-16
 │   │   │   └── AttendanceSimulator.tsx # What-if attendance slider & presets
 │   │   ├── pages/
@@ -235,7 +235,7 @@ c:\Users\GOWTHAM\OneDrive\Desktop\project file\
 │   │   │   ├── RecommendationsPage.tsx # Prescriptive fleet actions
 │   │   │   ├── AnalyticsPage.tsx # Recharts analytics suite
 │   │   │   ├── BusManagementPage.tsx # Fleet inventory & driver contacts
-│   │   │   ├── BusAllocationPage.tsx # NRIIT Smart Bus Allocation panel
+│   │   │   ├── BusAllocationPage.tsx # NRI University Bus Allocation panel
 │   │   │   ├── SettingsPage.tsx  # Future scope, architecture & disclaimers
 │   │   │   └── LoginPage.tsx     # Safe demo login with 1-click role presets
 │   │   ├── services/api.ts       # Resilient REST client

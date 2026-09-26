@@ -20,7 +20,7 @@ interface InteractiveMapProps {
   onSelectRoute?: (r: RouteItem) => void;
 }
 
-// Sleek Dark Theme for Google Maps matching NRIIT Smart Transit design system
+// Sleek Dark Theme for Google Maps matching NRI University Bus design system
 const GOOGLE_MAPS_DARK_STYLE: google.maps.MapTypeStyle[] = [
   { elementType: 'geometry', stylers: [{ color: '#0f172a' }] },
   { elementType: 'labels.text.stroke', stylers: [{ color: '#0f172a' }] },

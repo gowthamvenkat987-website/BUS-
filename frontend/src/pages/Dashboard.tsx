@@ -51,7 +51,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 font-['Outfit'] tracking-tight break-anywhere">
-              NRIIT Transport Command Center
+              NRI University Bus Command Center
             </h1>
             <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-200 shrink-0">
               Live Pilot

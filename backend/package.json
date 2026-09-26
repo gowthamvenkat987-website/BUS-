@@ -1,7 +1,7 @@
 {
   "name": "nriit-smart-transit-backend",
   "version": "1.0.0",
-  "description": "Express REST API and Data Pipeline for NRIIT Smart Transit",
+  "description": "Express REST API and Data Pipeline for NRI University Bus",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

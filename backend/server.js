@@ -183,7 +183,7 @@ recalculatePredictions(simulatedAttendance.overallPercentage);
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
-    system: 'NRIIT Smart Transit API',
+    system: 'NRI University Bus API',
     pilotCollege: 'NRI Institute of Technology, Pothavarappadu, Vijayawada',
     version: '1.0.0-hackathon',
     timestamp: new Date().toISOString()
@@ -453,7 +453,7 @@ app.get('/api/predict/all', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`====================================================`);
-  console.log(`NRIIT Smart Transit Backend API Server`);
+  console.log(`NRI University Bus Backend API Server`);
   console.log(`Primary Pilot: NRI Institute of Technology, Vijayawada`);
   console.log(`Listening on http://localhost:${PORT}`);
   console.log(`====================================================`);

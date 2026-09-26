@@ -45,7 +45,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </div>
           <div>
             <h1 className="text-2xl font-extrabold text-slate-900 font-['Outfit'] tracking-tight">
-              NRIIT <span className="text-blue-700">Smart Transit</span>
+              NRI <span className="text-blue-700">University Bus</span>
             </h1>
             <p className="text-xs font-semibold text-slate-500 mt-0.5">
               Transport Administration & Mobility Portal
@@ -133,7 +133,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             id="btn-login-submit"
             className="w-full bg-gradient-to-r from-blue-700 via-indigo-700 to-blue-800 hover:from-blue-800 hover:to-indigo-900 text-white font-bold py-3 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-xs"
           >
-            <span>Sign In to NRIIT Smart Transit</span>
+            <span>Sign In to NRI University Bus</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </form>
@@ -141,7 +141,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         {/* Demo Disclaimer */}
         <div className="mt-6 pt-4 border-t border-slate-100 text-center">
           <p className="text-[11px] text-slate-400">
-            NRIIT Smart Transit Environment • Safe Demo Authentication
+            NRI University Bus Environment • Safe Demo Authentication
           </p>
         </div>
       </div>

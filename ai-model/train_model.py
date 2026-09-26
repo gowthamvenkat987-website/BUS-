@@ -1,5 +1,5 @@
 """
-NRIIT Smart Transit — AI Overcrowding & Demand Prediction Model
+NRI University Bus — AI Overcrowding & Demand Prediction Model
 Primary Pilot: NRI Institute of Technology, Pothavarappadu, Vijayawada
 
 This script:
@@ -114,7 +114,7 @@ def train_and_export():
     print(f"Saved trained model to: {model_path}")
     
     meta = {
-        "model_name": "NRIIT Smart Transit Random Forest Predictor",
+        "model_name": "NRI University Bus Random Forest Predictor",
         "pilot_college": "NRI Institute of Technology (NRIIT)",
         "r2_score": round(r2, 4),
         "mae": round(mae, 2),

@@ -1,5 +1,5 @@
 {
-  "model_name": "NRIIT Smart Transit Random Forest Predictor",
+  "model_name": "NRI University Bus Random Forest Predictor",
   "pilot_college": "NRI Institute of Technology (NRIIT)",
   "r2_score": 0.9544,
   "mae": 2.17,

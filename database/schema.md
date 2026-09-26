@@ -1,4 +1,4 @@
-# NRIIT Smart Transit — Database Schema (Supabase / PostgreSQL Compatible)
+# NRI University Bus — Database Schema (Supabase / PostgreSQL Compatible)
 
 This schema is designed specifically for **NRI Institute of Technology (NRIIT)**, located at Pothavarappadu, Via Nunna, Vijayawada, Andhra Pradesh.
 

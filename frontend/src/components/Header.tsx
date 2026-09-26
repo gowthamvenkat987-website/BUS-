@@ -81,7 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div className="min-w-0 truncate">
             <div className="flex items-center gap-1.5 sm:gap-2">
               <h1 className="text-base sm:text-lg lg:text-xl font-bold tracking-tight text-slate-900 font-['Outfit'] truncate">
-                NRIIT <span className="text-blue-700 font-extrabold">Smart Transit</span>
+                NRI <span className="text-blue-700 font-extrabold">University Bus</span>
               </h1>
               <span className="hidden sm:inline-flex bg-blue-100 text-blue-800 text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full border border-blue-200 shrink-0">
                 Pilot

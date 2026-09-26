@@ -82,7 +82,7 @@ export const BusAllocationPage: React.FC<BusAllocationPageProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-extrabold text-slate-900 font-['Outfit']">
-              NRIIT Smart Bus Allocation
+              NRI University Bus Allocation
             </h1>
             <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-200">
               NRIIT Fleet Only

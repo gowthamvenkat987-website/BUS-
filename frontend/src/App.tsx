@@ -132,7 +132,7 @@ export function App() {
       />
 
       <div className="flex-1 flex overflow-hidden w-full relative">
-        {/* Universal Sidebar & Mobile Drawer with Smart Bus Allocation */}
+        {/* Universal Sidebar & Mobile Drawer with NRI University Bus Allocation */}
         <Sidebar
           activeTab={activeTab}
           onSelectTab={(t) => {
