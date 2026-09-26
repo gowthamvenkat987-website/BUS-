@@ -164,7 +164,7 @@ export const api = {
       subject: sessionData.subject,
       period: sessionData.period,
       room: 'Room 304, Abdul Kalam Block',
-      facultyName: 'Dr. K. Srinivas (Demo)',
+      facultyName: 'Dr. K. Srinivas',
       totalStudents: 60,
       presentCount: 0,
       attendancePct: 0,

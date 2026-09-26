@@ -150,7 +150,7 @@ export const LiveMonitoring: React.FC<LiveMonitoringProps> = ({ routes }) => {
             <span>Assigned Driver Contact</span>
           </div>
           <div className="mt-2 text-sm font-bold text-slate-900 truncate">Driver R. Narayana</div>
-          <p className="text-[11px] text-slate-500 mt-0.5 font-mono">+91 98480 12345 (Demo)</p>
+          <p className="text-[11px] text-slate-500 mt-0.5 font-mono">+91 98480 12345</p>
         </div>
 
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs min-w-0">

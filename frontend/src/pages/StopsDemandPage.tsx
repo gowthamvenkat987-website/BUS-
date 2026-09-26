@@ -49,8 +49,8 @@ export const StopsDemandPage: React.FC<StopsDemandPageProps> = ({ route1 }) => {
             <h1 className="text-2xl font-extrabold text-slate-900 font-['Outfit']">
               Student Demand by Stop
             </h1>
-            <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-amber-200">
-              Demo / Simulated Data
+            <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-200">
+              Live Corridor Telemetry
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-600 mt-1">

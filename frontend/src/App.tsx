@@ -23,37 +23,9 @@ import { INITIAL_COLLEGES, INITIAL_ROUTES, INITIAL_VEHICLES, INITIAL_SESSIONS, I
 
 export function App() {
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<UserRole>('ADMIN');
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
-
-  // Check Supabase session on mount
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const user = session?.user ?? null;
-      setCurrentUser(user);
-      if (user) {
-        const metaRole = (user.user_metadata?.role || user.app_metadata?.role || 'ADMIN').toUpperCase() as UserRole;
-        setUserRole(metaRole);
-      }
-      setIsAuthLoading(false);
-    }).catch(() => {
-      setIsAuthLoading(false);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      const user = session?.user ?? null;
-      setCurrentUser(user);
-      if (user) {
-        const metaRole = (user.user_metadata?.role || user.app_metadata?.role || 'ADMIN').toUpperCase() as UserRole;
-        setUserRole(metaRole);
-      }
-      setIsAuthLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
   
   // Data state (NRIIT Only)
   const [college] = useState<College>(INITIAL_COLLEGES[0]);
@@ -146,21 +118,6 @@ export function App() {
   const unreadAlertsCount = alerts.filter(a => a.status === 'active').length;
   const pendingRecCount = recommendations.filter(r => r.status === 'pending').length;
 
-  // Session verification loading state
-  if (isAuthLoading) {
-    return (
-      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xl mb-3 border border-slate-800">
-          <Bus className="w-7 h-7 text-blue-400" />
-        </div>
-        <h2 className="text-base font-bold text-slate-800 font-['Outfit']">NRI University Bus</h2>
-        <p className="text-xs text-slate-500 mt-1.5 flex items-center justify-center gap-1.5 font-medium">
-          <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-600" />
-          <span>Verifying authenticated session...</span>
-        </p>
-      </div>
-    );
-  }
 
   // Authentication Protection Guard
   if (!currentUser) {

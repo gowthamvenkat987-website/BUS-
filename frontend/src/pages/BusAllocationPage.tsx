@@ -51,7 +51,7 @@ export const BusAllocationPage: React.FC<BusAllocationPageProps> = ({
   const supportBuses = [
     {
       busId: "veh-demo-d",
-      name: "Assigned Standby Vehicle D (Demo)",
+      name: "Assigned Standby Vehicle D",
       currentRoute: "NRIIT Campus Depot (Standby)",
       totalSeats: 35,
       currentOccupancy: 0,
@@ -63,7 +63,7 @@ export const BusAllocationPage: React.FC<BusAllocationPageProps> = ({
     },
     {
       busId: "veh-demo-c",
-      name: "Assigned Vehicle C (Demo)",
+      name: "Assigned Vehicle C",
       currentRoute: "Route 3 (Gannavaram Corridor)",
       totalSeats: 45,
       currentOccupancy: 19,
