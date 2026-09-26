@@ -23,6 +23,7 @@ export function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<UserRole>('ADMIN');
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   
   // Data state (NRIIT Only)
   const [college] = useState<College>(INITIAL_COLLEGES[0]);
@@ -84,7 +85,6 @@ export function App() {
 
   const handleScanAttendance = async (payload: any) => {
     const res = await api.scanAttendance(payload);
-    // Refresh sessions
     const updated = await api.getSessions();
     if (updated) setSessions([...updated]);
     return res;
@@ -119,28 +119,40 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col antialiased">
-      {/* Universal Header (NRIIT Only) */}
+    <div className="min-h-screen bg-slate-50 flex flex-col antialiased w-full overflow-x-hidden">
+      {/* Universal Header (NRIIT Only) with Mobile Menu Toggle */}
       <Header
         college={college}
         userRole={userRole}
         onChangeRole={(r) => setUserRole(r)}
         unreadAlertsCount={unreadAlertsCount}
         onOpenAlerts={() => setActiveTab('ai-alerts')}
+        isMobileMenuOpen={isMobileMenuOpen}
+        onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
       />
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Universal Sidebar with Smart Bus Allocation */}
+      <div className="flex-1 flex overflow-hidden w-full relative">
+        {/* Universal Sidebar & Mobile Drawer with Smart Bus Allocation */}
         <Sidebar
           activeTab={activeTab}
-          onSelectTab={(t) => setActiveTab(t)}
+          onSelectTab={(t) => {
+            if (t === 'bus-boarding') {
+              setUserRole('STUDENT');
+              setActiveTab('qr-attendance');
+            } else {
+              setActiveTab(t);
+            }
+            setIsMobileMenuOpen(false);
+          }}
           unreadAlertsCount={unreadAlertsCount}
           pendingRecCount={pendingRecCount}
+          isMobileOpen={isMobileMenuOpen}
+          onCloseMobile={() => setIsMobileMenuOpen(false)}
         />
 
         {/* Main Content Viewport */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-7">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-3.5 sm:p-5 lg:p-7 min-w-0 touch-scroll">
+          <div className="max-w-[1600px] w-full mx-auto min-w-0">
             {activeTab === 'dashboard' && (
               <Dashboard
                 routes={routes}
@@ -173,13 +185,14 @@ export function App() {
               />
             )}
 
-            {activeTab === 'qr-attendance' && (
+            {(activeTab === 'qr-attendance' || activeTab === 'bus-boarding') && (
               <QRAttendancePage
                 sessions={sessions}
                 onGenerateSession={handleGenerateSession}
                 onScanAttendance={handleScanAttendance}
                 userRole={userRole}
                 onChangeRole={(r) => setUserRole(r)}
+                initialMode={activeTab === 'bus-boarding' ? 'BUS_BOARDING' : undefined}
               />
             )}
 

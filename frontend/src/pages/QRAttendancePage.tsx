@@ -23,6 +23,7 @@ interface QRAttendancePageProps {
   onScanAttendance: (payload: any) => Promise<{ success: boolean; message: string; sessionStats?: any }>;
   userRole: UserRole;
   onChangeRole: (r: UserRole) => void;
+  initialMode?: 'FACULTY' | 'STUDENT' | 'BUS_BOARDING';
 }
 
 export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
@@ -30,17 +31,36 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
   onGenerateSession,
   onScanAttendance,
   userRole,
-  onChangeRole
+  onChangeRole,
+  initialMode
 }) => {
-  // Mode selection: Faculty or Student
-  const [activeMode, setActiveMode] = useState<'FACULTY' | 'STUDENT'>(
-    userRole === 'STUDENT' ? 'STUDENT' : 'FACULTY'
+  // Mode selection: Faculty or Student or Bus Boarding
+  const [activeMode, setActiveMode] = useState<'FACULTY' | 'STUDENT' | 'BUS_BOARDING'>(
+    initialMode || (userRole === 'STUDENT' ? 'STUDENT' : 'FACULTY')
   );
 
-  // Sync role change
+  // Sync role and tab change
   useEffect(() => {
-    if (userRole === 'STUDENT') setActiveMode('STUDENT');
-  }, [userRole]);
+    if (initialMode) {
+      setActiveMode(initialMode);
+    } else if (activeMode === 'BUS_BOARDING') {
+      setActiveMode(userRole === 'STUDENT' ? 'STUDENT' : 'FACULTY');
+    } else if (userRole === 'STUDENT') {
+      setActiveMode('STUDENT');
+    }
+  }, [userRole, initialMode]);
+
+  // Bus Boarding QR state
+  const [busBoardingDone, setBusBoardingDone] = useState(false);
+  const [isScanningBus, setIsScanningBus] = useState(false);
+
+  const handleScanBusQR = () => {
+    setIsScanningBus(true);
+    setTimeout(() => {
+      setIsScanningBus(false);
+      setBusBoardingDone(true);
+    }, 500);
+  };
 
   // Current selected active session for faculty
   const [selectedSession, setSelectedSession] = useState<AttendanceSession>(sessions[0] || null);
@@ -163,20 +183,20 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
           </p>
         </div>
 
-        {/* Mode Toggle Pills (Faculty vs Student) */}
-        <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-xs">
+        {/* Mode Toggle Pills (Faculty vs Student vs Bus Boarding) */}
+        <div className="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200 shadow-xs overflow-x-auto touch-scroll max-w-full">
           <button
             onClick={() => {
               setActiveMode('FACULTY');
               onChangeRole('FACULTY');
             }}
-            className={`flex items-center gap-1.5 text-xs px-4 py-2 rounded-lg font-bold transition ${
+            className={`flex items-center gap-1.5 text-xs px-3.5 py-2.5 min-h-[44px] rounded-lg font-bold transition shrink-0 ${
               activeMode === 'FACULTY'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <BookOpen className="w-3.5 h-3.5" />
+            <BookOpen className="w-4 h-4" />
             <span>Faculty Mode (Generate QR)</span>
           </button>
           <button
@@ -184,14 +204,27 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
               setActiveMode('STUDENT');
               onChangeRole('STUDENT');
             }}
-            className={`flex items-center gap-1.5 text-xs px-4 py-2 rounded-lg font-bold transition ${
+            className={`flex items-center gap-1.5 text-xs px-3.5 py-2.5 min-h-[44px] rounded-lg font-bold transition shrink-0 ${
               activeMode === 'STUDENT'
                 ? 'bg-blue-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            <Camera className="w-3.5 h-3.5" />
+            <Camera className="w-4 h-4" />
             <span>Student Mode (Scan QR)</span>
+          </button>
+          <button
+            onClick={() => {
+              setActiveMode('BUS_BOARDING');
+            }}
+            className={`flex items-center gap-1.5 text-xs px-3.5 py-2.5 min-h-[44px] rounded-lg font-bold transition shrink-0 ${
+              activeMode === 'BUS_BOARDING'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <QrCode className="w-4 h-4" />
+            <span>Bus Boarding QR</span>
           </button>
         </div>
       </div>
@@ -309,13 +342,13 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
             </div>
 
             <form onSubmit={handleGenerate} className="mt-4 space-y-4 text-xs">
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="font-semibold text-slate-700 block mb-1">Department</label>
                   <select
                     value={department}
                     onChange={(e) => setDepartment(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 bg-white"
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 bg-white"
                   >
                     <option value="CSE">CSE</option>
                     <option value="ECE">ECE</option>
@@ -332,7 +365,7 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                   <select
                     value={year}
                     onChange={(e) => setYear(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 bg-white"
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 bg-white"
                   >
                     <option value="I">I Year</option>
                     <option value="II">II Year</option>
@@ -346,7 +379,7 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                   <select
                     value={section}
                     onChange={(e) => setSection(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 bg-white"
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 bg-white"
                   >
                     <option value="A">Section A</option>
                     <option value="B">Section B</option>
@@ -361,17 +394,17 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 text-xs"
+                  className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 text-xs"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="font-semibold text-slate-700 block mb-1">Period & Timetable</label>
                   <select
                     value={period}
                     onChange={(e) => setPeriod(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 bg-white text-xs"
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 bg-white text-xs"
                   >
                     <option>Period 1 (08:45 AM - 09:45 AM)</option>
                     <option>Period 2 (09:45 AM - 10:45 AM)</option>
@@ -387,7 +420,7 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                   <select
                     value={expiryMinutes}
                     onChange={(e) => setExpiryMinutes(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 bg-white text-xs"
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 focus:outline-blue-600 bg-white text-xs"
                   >
                     <option value={5}>5 Minutes (Strict Security)</option>
                     <option value={8}>8 Minutes (Standard Lab)</option>
@@ -400,7 +433,7 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                 type="submit"
                 disabled={isGenerating}
                 id="btn-generate-qr"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-2"
+                className="w-full min-h-[44px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
               >
                 <QrCode className="w-4 h-4" />
                 <span>{isGenerating ? 'Generating...' : 'Generate New Attendance QR Session'}</span>
@@ -498,19 +531,19 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                 <label className="font-semibold text-slate-700 block mb-1">
                   Captured QR Session Token
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     required
                     value={scannedToken}
                     onChange={(e) => setScannedToken(e.target.value)}
                     placeholder="e.g. NRIIT-ATT-2026-CSEA-9812"
-                    className="flex-1 px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs focus:outline-blue-600 bg-slate-50"
+                    className="flex-1 min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs focus:outline-blue-600 bg-slate-50"
                   />
                   <button
                     type="button"
                     onClick={() => setScannedToken(selectedSession?.sessionToken || 'NRIIT-ATT-2026-CSEA-9812')}
-                    className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs"
+                    className="min-h-[44px] px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-xs shrink-0 cursor-pointer"
                     title="Load latest faculty token"
                   >
                     Paste Active QR
@@ -518,7 +551,7 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="font-semibold text-slate-700 block mb-1">Student Roll Number</label>
                   <input
@@ -527,7 +560,7 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                     value={studentRoll}
                     onChange={(e) => setStudentRoll(e.target.value)}
                     placeholder="21NR1A0501"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs focus:outline-blue-600"
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs focus:outline-blue-600"
                   />
                 </div>
                 <div>
@@ -537,18 +570,18 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                     required
                     value={studentName}
                     onChange={(e) => setStudentName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-blue-600"
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-blue-600"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="font-semibold text-slate-700 block mb-1">Department</label>
                   <select
                     value={studentDept}
                     onChange={(e) => setStudentDept(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-blue-600 bg-white"
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-blue-600 bg-white"
                   >
                     <option value="CSE">CSE</option>
                     <option value="ECE">ECE</option>
@@ -561,7 +594,7 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                   <select
                     value={studentSection}
                     onChange={(e) => setStudentSection(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-blue-600 bg-white"
+                    className="w-full min-h-[44px] px-3 py-2 rounded-xl border border-slate-300 text-xs focus:outline-blue-600 bg-white"
                   >
                     <option value="A">Section A</option>
                     <option value="B">Section B</option>
@@ -579,7 +612,7 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                 type="submit"
                 disabled={isScanning}
                 id="btn-submit-attendance"
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-2"
+                className="w-full min-h-[44px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
               >
                 <UserCheck className="w-4 h-4" />
                 <span>{isScanning ? 'Verifying...' : 'Submit Attendance & Register Commute'}</span>
@@ -626,6 +659,129 @@ export const QRAttendancePage: React.FC<QRAttendancePageProps> = ({
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Mode C: BUS BOARDING QR */}
+      {activeMode === 'BUS_BOARDING' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: Camera Scanner Interface */}
+          <div className="lg:col-span-6 bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs flex flex-col items-center">
+            <div className="w-full pb-3 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">
+                  Mobile Bus Boarding
+                </span>
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 font-['Outfit']">
+                  SCAN BUS QR
+                </h3>
+              </div>
+              <span className="text-xs bg-emerald-50 text-emerald-700 font-bold px-2.5 py-1 rounded-full">
+                Active Transit Gate
+              </span>
+            </div>
+
+            {/* Camera Scanner Viewfinder */}
+            <div className="my-5 w-full max-w-sm h-64 bg-slate-950 rounded-2xl border-2 border-emerald-500 relative overflow-hidden flex flex-col items-center justify-center text-white shadow-lg">
+              {/* Corner markers */}
+              <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-emerald-400"></div>
+              <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-emerald-400"></div>
+              <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-emerald-400"></div>
+              <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-emerald-400"></div>
+
+              {/* Scanning green line animation */}
+              <div className="absolute left-8 right-8 h-0.5 bg-emerald-400 shadow-[0_0_8px_#10b981] animate-pulse"></div>
+
+              <Camera className="w-10 h-10 text-emerald-400 mb-2" />
+              <p className="text-xs font-semibold text-slate-200">Point Camera at Bus Entry Door QR</p>
+              <p className="text-[10px] text-slate-400 mt-1">NRIIT Route 1 (Mangalagiri) Gate</p>
+            </div>
+
+            <p className="text-xs text-slate-500 text-center max-w-md mb-4">
+              Position the bus QR sticker mounted inside or beside the entry door within the scanner frame.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleScanBusQR}
+              disabled={isScanningBus}
+              className="w-full max-w-sm min-h-[48px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-3 rounded-xl text-sm transition shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <QrCode className="w-5 h-5" />
+              <span>{isScanningBus ? 'Scanning Bus QR...' : 'Scan Bus QR Now'}</span>
+            </button>
+          </div>
+
+          {/* Right: Boarding Status Card (Exact format requested by user) */}
+          <div className="lg:col-span-6 bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs flex flex-col justify-between">
+            <div>
+              <div className="pb-3 border-b border-slate-100">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900 font-['Outfit']">
+                  Boarding Verification
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Real-time validation against NRIIT Transit Passenger Registry
+                </p>
+              </div>
+
+              {busBoardingDone ? (
+                <div className="mt-5 bg-emerald-50/80 border border-emerald-300 rounded-2xl p-5 space-y-4">
+                  <div className="flex items-center gap-2 text-emerald-800 font-extrabold text-lg">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
+                    <span>✓ Boarding Confirmed</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-emerald-200 text-sm">
+                    <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-2xs">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Bus:</span>
+                      <p className="font-extrabold text-slate-900 text-base">BUS-R1-01</p>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-2xs">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Route:</span>
+                      <p className="font-extrabold text-slate-900 text-base">Mangalagiri</p>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-2xs">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Boarding Stop:</span>
+                      <p className="font-extrabold text-slate-900 text-base">Kaza</p>
+                    </div>
+
+                    <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-2xs">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Time:</span>
+                      <p className="font-extrabold text-emerald-700 font-mono text-base">8:31 AM</p>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 text-xs text-emerald-800 font-medium flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Student seat verified. Real-time passenger count updated on Live Bus Monitor.</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setBusBoardingDone(false)}
+                    className="w-full min-h-[44px] bg-white hover:bg-slate-50 text-slate-700 font-bold border border-slate-300 rounded-xl text-xs transition cursor-pointer"
+                  >
+                    Reset & Scan Another Bus
+                  </button>
+                </div>
+              ) : (
+                <div className="mt-6 p-6 rounded-2xl border-2 border-dashed border-slate-200 text-center text-slate-500">
+                  <QrCode className="w-12 h-12 text-slate-300 mx-auto mb-2" />
+                  <p className="font-bold text-slate-700 text-sm">Ready to scan student bus pass</p>
+                  <p className="text-xs text-slate-400 mt-1 max-w-xs mx-auto">
+                    Click "Scan Bus QR Now" on the scanner to simulate reading the QR badge on NRIIT bus BUS-R1-01 at Kaza stop.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-100 text-xs text-slate-500 flex items-center justify-between">
+              <span>Bus Door Protocol v2.4</span>
+              <span className="font-mono text-[11px] text-emerald-700 font-bold">Fast-Tap Ready</span>
+            </div>
           </div>
         </div>
       )}

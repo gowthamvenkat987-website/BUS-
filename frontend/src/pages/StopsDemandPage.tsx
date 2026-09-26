@@ -59,7 +59,7 @@ export const StopsDemandPage: React.FC<StopsDemandPageProps> = ({ route1 }) => {
         </div>
 
         {/* Total waiting banner */}
-        <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3">
+        <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-xs flex items-center gap-3 self-start sm:self-auto shrink-0">
           <div className="p-2 rounded-lg bg-red-50 text-red-600">
             <Users className="w-4 h-4" />
           </div>
@@ -77,25 +77,25 @@ export const StopsDemandPage: React.FC<StopsDemandPageProps> = ({ route1 }) => {
       {/* Bottleneck Warning Callout */}
       <div className="bg-red-50/80 border border-red-200 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-red-600 text-white shadow-xs">
+          <div className="p-2.5 rounded-xl bg-red-600 text-white shadow-xs shrink-0">
             <AlertTriangle className="w-5 h-5 animate-pulse" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <h3 className="text-sm font-bold text-red-950 font-['Outfit']">
                 Surge Bottleneck Detected: Kaza & Chinna Kakani
               </h3>
-              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shrink-0">
                 63 Students Combined
               </span>
             </div>
-            <p className="text-xs text-red-800 mt-0.5">
+            <p className="text-xs text-red-800 mt-0.5 break-anywhere">
               These two consecutive stops account for 46% of total corridor demand, causing the primary bus capacity overflow.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-2 text-xs self-start md:self-auto shrink-0">
           <span className="bg-white/80 text-red-900 px-3 py-1.5 rounded-lg border border-red-200 font-semibold">
             Action: Depot standby bus recommended
           </span>
@@ -103,7 +103,7 @@ export const StopsDemandPage: React.FC<StopsDemandPageProps> = ({ route1 }) => {
       </div>
 
       {/* Stop Demand Bar Chart */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs min-w-0">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
           <div>
             <h2 className="text-base font-bold text-slate-900 font-['Outfit']">
@@ -113,7 +113,7 @@ export const StopsDemandPage: React.FC<StopsDemandPageProps> = ({ route1 }) => {
               Live count of students currently queued at stops along NH-16 Mangalagiri-NRIIT corridor
             </p>
           </div>
-          <div className="flex items-center gap-3 text-xs">
+          <div className="flex flex-wrap items-center gap-3 text-xs">
             <div className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded bg-red-600 inline-block"></span>
               <span className="text-slate-600">Critical (≥25)</span>
@@ -129,14 +129,14 @@ export const StopsDemandPage: React.FC<StopsDemandPageProps> = ({ route1 }) => {
           </div>
         </div>
 
-        <div className="mt-6 h-72 w-full">
+        <div className="mt-6 h-72 w-full min-w-0">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={demoStopsData} margin={{ top: 10, right: 20, left: 0, bottom: 25 }}>
+            <BarChart data={demoStopsData} margin={{ top: 10, right: 10, left: -10, bottom: 25 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis 
                 dataKey="name" 
-                tick={{ fontSize: 11, fill: '#475569' }} 
-                angle={-15} 
+                tick={{ fontSize: 10, fill: '#475569' }} 
+                angle={-20} 
                 textAnchor="end" 
                 interval={0}
               />
@@ -172,16 +172,16 @@ export const StopsDemandPage: React.FC<StopsDemandPageProps> = ({ route1 }) => {
 
       {/* Stop Metrics Table */}
       <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <h3 className="text-sm font-bold text-slate-900 font-['Outfit']">
             Stop-Level Demand & Bottleneck Index
           </h3>
-          <span className="text-[11px] text-slate-500 font-mono">
+          <span className="text-[11px] text-slate-500 font-mono self-start sm:self-auto">
             Source: Bus Stop IR/QR Scans (Simulated)
           </span>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto touch-scroll">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200">
               <tr>

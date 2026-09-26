@@ -87,44 +87,49 @@ export const BusManagementPage: React.FC<BusManagementPageProps> = ({ vehicles }
               </div>
 
               {/* Vehicle Specs */}
-              <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 min-w-0">
                   <span className="text-[10px] text-slate-400 block">SEATING</span>
                   <span className="font-bold text-slate-900 font-mono text-sm mt-0.5 block">
                     {v.capacity} Seats
                   </span>
+                  <span className="text-[10px] text-emerald-600 font-semibold">
+                    {Math.max(0, v.capacity - v.currentOccupancy)} Available
+                  </span>
                 </div>
 
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 min-w-0">
                   <span className="text-[10px] text-slate-400 block">CURRENT LOAD</span>
                   <span className="font-bold text-slate-900 font-mono text-sm mt-0.5 block">
                     {v.currentOccupancy} pax ({occupancyPct}%)
                   </span>
+                  <span className="text-[10px] text-slate-500">Boarded</span>
                 </div>
 
-                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 min-w-0">
                   <span className="text-[10px] text-slate-400 block">SPEED</span>
                   <span className="font-bold text-slate-900 font-mono text-sm mt-0.5 block">
                     {v.speedKmph} km/h
                   </span>
+                  <span className="text-[10px] text-slate-500">GPS Telemetry</span>
                 </div>
               </div>
 
               {/* Assignment & Location */}
               <div className="mt-3.5 space-y-1.5 text-xs text-slate-600">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5 sm:gap-0">
                   <span className="text-slate-400">Assigned Corridor:</span>
-                  <strong className="text-slate-800">
+                  <strong className="text-slate-800 break-anywhere">
                     {v.routeNumber ? `Route ${v.routeNumber}` : 'Depot Standby (Unassigned)'}
                   </strong>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5 sm:gap-0">
                   <span className="text-slate-400">Current Position:</span>
-                  <strong className="text-blue-700">{v.currentLocation}</strong>
+                  <strong className="text-blue-700 break-anywhere">{v.currentLocation}</strong>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-0.5 sm:gap-0">
                   <span className="text-slate-400">Driver Contact:</span>
-                  <span className="font-mono text-slate-700">{v.driverName} ({v.phoneDemo})</span>
+                  <span className="font-mono text-slate-700 break-anywhere">{v.driverName} ({v.phoneDemo})</span>
                 </div>
               </div>
             </div>

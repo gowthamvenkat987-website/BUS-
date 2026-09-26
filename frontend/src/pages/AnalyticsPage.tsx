@@ -111,8 +111,8 @@ export const AnalyticsPage: React.FC = () => {
       {/* Row 1: Daily Passenger Demand & Route-Wise Occupancy */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Daily Demand */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
             <div>
               <h3 className="text-sm font-bold text-slate-900 font-['Outfit']">
                 Daily Passenger Demand Trend
@@ -121,17 +121,17 @@ export const AnalyticsPage: React.FC = () => {
                 Weekly commuter volume comparing historical baselines against AI forecasts
               </p>
             </div>
-            <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded shrink-0">
               Weekly Aggregate
             </span>
           </div>
 
-          <div className="mt-4 h-64 w-full">
+          <div className="mt-4 h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={dailyDemandData} margin={{ top: 10, right: 10, left: -10, bottom: 15 }}>
+              <BarChart data={dailyDemandData} margin={{ top: 10, right: 10, left: -15, bottom: 15 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#475569' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+                <XAxis dataKey="day" tick={{ fontSize: 10, fill: '#475569' }} />
+                <YAxis tick={{ fontSize: 10, fill: '#475569' }} />
                 <Tooltip />
                 <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                 <Bar dataKey="historical" name="Historical Baseline" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
@@ -142,8 +142,8 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Route Occupancy Comparison */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
             <div>
               <h3 className="text-sm font-bold text-slate-900 font-['Outfit']">
                 Corridor Occupancy vs Physical Capacity
@@ -152,17 +152,17 @@ export const AnalyticsPage: React.FC = () => {
                 Route 1 displays severe overcapacity (116%) while Route 3 retains 23 spare seats
               </p>
             </div>
-            <span className="text-[10px] font-bold bg-red-50 text-red-700 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold bg-red-50 text-red-700 px-2 py-0.5 rounded shrink-0">
               Corridor Comparison
             </span>
           </div>
 
-          <div className="mt-4 h-64 w-full">
+          <div className="mt-4 h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={routeOccupancyData} layout="vertical" margin={{ top: 10, right: 20, left: 35, bottom: 15 }}>
+              <BarChart data={routeOccupancyData} layout="vertical" margin={{ top: 10, right: 15, left: 10, bottom: 15 }}>
                 <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                <XAxis type="number" tick={{ fontSize: 11, fill: '#475569' }} />
-                <YAxis dataKey="route" type="category" tick={{ fontSize: 10, fill: '#475569' }} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: '#475569' }} />
+                <YAxis dataKey="route" type="category" tick={{ fontSize: 9, fill: '#475569' }} width={85} />
                 <Tooltip />
                 <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                 <Bar dataKey="capacity" name="Bus Capacity" fill="#94a3b8" radius={[0, 4, 4, 0]} />
@@ -176,8 +176,8 @@ export const AnalyticsPage: React.FC = () => {
       {/* Row 2: Peak Hour Bell Curve & Attendance vs Risk */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Peak Hour Curve */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
             <div>
               <h3 className="text-sm font-bold text-slate-900 font-['Outfit']">
                 Peak-Hour Commuter Surge (Arrival & Departure)
@@ -186,14 +186,14 @@ export const AnalyticsPage: React.FC = () => {
                 Surge spikes at 08:30 AM arrival and 03:45 PM lab departure
               </p>
             </div>
-            <span className="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded shrink-0">
               Timetable Peaks
             </span>
           </div>
 
-          <div className="mt-4 h-64 w-full">
+          <div className="mt-4 h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={peakHourData} margin={{ top: 10, right: 15, left: -10, bottom: 15 }}>
+              <AreaChart data={peakHourData} margin={{ top: 10, right: 15, left: -15, bottom: 15 }}>
                 <defs>
                   <linearGradient id="peakGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8}/>
@@ -201,8 +201,8 @@ export const AnalyticsPage: React.FC = () => {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#475569' }} />
-                <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+                <XAxis dataKey="time" tick={{ fontSize: 9, fill: '#475569' }} />
+                <YAxis tick={{ fontSize: 10, fill: '#475569' }} />
                 <Tooltip />
                 <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                 <Area type="monotone" dataKey="demand" name="Passenger Commute Volume" stroke="#2563eb" fillOpacity={1} fill="url(#peakGrad)" />
@@ -213,8 +213,8 @@ export const AnalyticsPage: React.FC = () => {
         </div>
 
         {/* Attendance vs Predicted Demand */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
             <div>
               <h3 className="text-sm font-bold text-slate-900 font-['Outfit']">
                 Attendance % vs Overcrowding Probability
@@ -223,18 +223,18 @@ export const AnalyticsPage: React.FC = () => {
                 Correlating classroom presence rates with the likelihood of Route 1 exceeding capacity
               </p>
             </div>
-            <span className="text-[10px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded">
+            <span className="text-[10px] font-bold bg-purple-50 text-purple-700 px-2 py-0.5 rounded shrink-0">
               AI Sensitivity Analysis
             </span>
           </div>
 
-          <div className="mt-4 h-64 w-full">
+          <div className="mt-4 h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={attVsDemandData} margin={{ top: 10, right: 15, left: -10, bottom: 15 }}>
+              <LineChart data={attVsDemandData} margin={{ top: 10, right: 15, left: -15, bottom: 15 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="attendance" tick={{ fontSize: 11, fill: '#475569' }} />
-                <YAxis yAxisId="left" tick={{ fontSize: 11, fill: '#475569' }} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11, fill: '#475569' }} />
+                <XAxis dataKey="attendance" tick={{ fontSize: 10, fill: '#475569' }} />
+                <YAxis yAxisId="left" tick={{ fontSize: 10, fill: '#475569' }} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: '#475569' }} />
                 <Tooltip />
                 <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                 <Line yAxisId="left" type="monotone" dataKey="demand" name="Route 1 Pax Demand" stroke="#2563eb" strokeWidth={2.5} dot={{ r: 4 }} />
@@ -246,8 +246,8 @@ export const AnalyticsPage: React.FC = () => {
       </div>
 
       {/* Row 3: Model Accuracy: Historical vs Predicted */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-xs min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
           <div>
             <h3 className="text-sm font-bold text-slate-900 font-['Outfit']">
               AI Model Prediction Accuracy (Actual vs Predicted Across Trips)
@@ -256,17 +256,17 @@ export const AnalyticsPage: React.FC = () => {
               Validating scikit-learn Random Forest model against actual turnstile boarding pings
             </p>
           </div>
-          <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded">
+          <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded shrink-0">
             R² = 0.9544 (High Fidelity)
           </span>
         </div>
 
-        <div className="mt-4 h-60 w-full">
+        <div className="mt-4 h-60 w-full min-w-0">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={accuracyData} margin={{ top: 10, right: 10, left: -10, bottom: 15 }}>
+            <BarChart data={accuracyData} margin={{ top: 10, right: 10, left: -15, bottom: 15 }}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <XAxis dataKey="trip" tick={{ fontSize: 11, fill: '#475569' }} />
-              <YAxis tick={{ fontSize: 11, fill: '#475569' }} />
+              <XAxis dataKey="trip" tick={{ fontSize: 10, fill: '#475569' }} />
+              <YAxis tick={{ fontSize: 10, fill: '#475569' }} />
               <Tooltip />
               <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
               <Bar dataKey="actual" name="Actual Boarded Passengers" fill="#3b82f6" radius={[4, 4, 0, 0]} />

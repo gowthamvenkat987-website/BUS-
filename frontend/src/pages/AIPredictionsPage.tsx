@@ -63,7 +63,7 @@ export const AIPredictionsPage: React.FC<AIPredictionsPageProps> = ({
         </div>
 
         {/* Model Metrics pill */}
-        <div className="flex items-center gap-3 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs text-xs font-mono">
+        <div className="flex flex-wrap items-center gap-3 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs text-xs font-mono self-start sm:self-auto shrink-0">
           <div>
             <span className="text-slate-400 text-[10px] block">R² SCORE</span>
             <span className="font-bold text-purple-700">0.9544</span>
@@ -80,17 +80,17 @@ export const AIPredictionsPage: React.FC<AIPredictionsPageProps> = ({
       </div>
 
       {/* Corridor Selector */}
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-semibold text-slate-500">Corridor under inspection:</span>
-        <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        <span className="text-xs font-semibold text-slate-500 shrink-0">Corridor under inspection:</span>
+        <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-xs overflow-x-auto max-w-full touch-scroll">
           {routes.map((r) => (
             <button
               key={r.id}
               onClick={() => setSelectedRouteId(r.id)}
-              className={`text-xs px-3.5 py-1.5 rounded-lg font-bold transition ${
+              className={`text-xs px-3.5 py-2 min-h-[44px] rounded-lg font-bold transition whitespace-nowrap flex items-center justify-center ${
                 r.id === activeRoute.id
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               {r.name}
@@ -100,24 +100,24 @@ export const AIPredictionsPage: React.FC<AIPredictionsPageProps> = ({
       </div>
 
       {/* Primary Forecast Card */}
-      <div className={`p-6 rounded-2xl border-2 transition-all ${
+      <div className={`p-4 sm:p-6 rounded-2xl border-2 transition-all min-w-0 ${
         isOvercrowded
           ? 'bg-red-50/50 border-red-300 ring-2 ring-red-100'
           : isModerate
           ? 'bg-amber-50/50 border-amber-300'
           : 'bg-emerald-50/50 border-emerald-300'
       }`}>
-        <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-200/60">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/60">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">
               PREDICTIVE DISPATCH OUTCOME
             </span>
-            <h2 className="text-xl font-extrabold text-slate-900 font-['Outfit'] mt-0.5">
+            <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 font-['Outfit'] mt-0.5 break-anywhere">
               {activeRoute.name}
             </h2>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 self-start sm:self-auto">
             <span className={`text-xs font-extrabold px-3 py-1 rounded-lg ${
               isOvercrowded
                 ? 'bg-red-600 text-white animate-pulse'
@@ -133,9 +133,9 @@ export const AIPredictionsPage: React.FC<AIPredictionsPageProps> = ({
           </div>
         </div>
 
-        {/* 4 Metrics from Prompt */}
-        <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
-          <div className="bg-white p-3.5 rounded-xl border border-slate-200">
+        {/* 4 Metrics from Prompt (1 col on mobile, 2 on tablet, 4 on desktop) */}
+        <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 text-xs font-mono">
+          <div className="bg-white p-3.5 rounded-xl border border-slate-200 min-w-0">
             <span className="text-slate-400 text-[10px] block">CURRENT LOAD</span>
             <span className="text-xl font-bold text-slate-900 mt-1 block">
               {activeRoute.currentPassengers} passengers
@@ -145,7 +145,7 @@ export const AIPredictionsPage: React.FC<AIPredictionsPageProps> = ({
             </span>
           </div>
 
-          <div className={`p-3.5 rounded-xl border ${isOvercrowded ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'}`}>
+          <div className={`p-3.5 rounded-xl border min-w-0 ${isOvercrowded ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200'}`}>
             <span className={`${isOvercrowded ? 'text-red-700' : 'text-slate-400'} text-[10px] block font-bold`}>
               AI PREDICTED DEMAND
             </span>
@@ -157,17 +157,17 @@ export const AIPredictionsPage: React.FC<AIPredictionsPageProps> = ({
             </span>
           </div>
 
-          <div className="bg-white p-3.5 rounded-xl border border-slate-200">
+          <div className="bg-white p-3.5 rounded-xl border border-slate-200 min-w-0">
             <span className="text-slate-400 text-[10px] block">BUS SEATING CAPACITY</span>
             <span className="text-xl font-bold text-slate-900 mt-1 block">
               {activeRoute.capacity} seats
             </span>
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] text-slate-500 truncate block">
               {activeRoute.assignedVehicle}
             </span>
           </div>
 
-          <div className={`p-3.5 rounded-xl border ${isOvercrowded ? 'bg-red-100/70 border-red-300' : 'bg-white border-slate-200'}`}>
+          <div className={`p-3.5 rounded-xl border min-w-0 ${isOvercrowded ? 'bg-red-100/70 border-red-300' : 'bg-white border-slate-200'}`}>
             <span className={`${isOvercrowded ? 'text-red-700' : 'text-slate-400'} text-[10px] block font-bold`}>
               PREDICTED OCCUPANCY
             </span>
@@ -181,11 +181,11 @@ export const AIPredictionsPage: React.FC<AIPredictionsPageProps> = ({
         </div>
       </div>
 
-      {/* AI Explanation (WHY IS ROUTE 1 HIGH RISK?) - Section 23 of prompt */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+      {/* AI Explanation (WHY IS ROUTE 1 HIGH RISK?) */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-6 shadow-xs space-y-4 min-w-0">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-blue-50 text-blue-600">
+            <div className="p-2 rounded-xl bg-blue-50 text-blue-600 shrink-0">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
@@ -197,7 +197,7 @@ export const AIPredictionsPage: React.FC<AIPredictionsPageProps> = ({
               </p>
             </div>
           </div>
-          <span className="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded">
+          <span className="text-[10px] bg-slate-100 text-slate-700 font-bold px-2 py-0.5 rounded self-start sm:self-auto shrink-0">
             Multivariate Attribution
           </span>
         </div>
@@ -251,19 +251,19 @@ export const AIPredictionsPage: React.FC<AIPredictionsPageProps> = ({
               <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider block">
                 Prescriptive Transportation Recommendation
               </span>
-              <p className="text-xs text-slate-800 mt-2 leading-relaxed font-semibold">
+              <p className="text-xs text-slate-800 mt-2 leading-relaxed font-semibold break-anywhere">
                 “Deploy additional vehicle capacity or reallocate capacity from a lower-demand route.”
               </p>
-              <p className="text-[11px] text-slate-600 mt-2 leading-relaxed">
+              <p className="text-[11px] text-slate-600 mt-2 leading-relaxed break-anywhere">
                 The model prescribes deploying <strong>Standby Assigned Vehicle D</strong> (35 seats) from the NRIIT campus depot to intercept Chinna Kakani stop, absorbing the 35-student queue and bringing Route 1 occupancy down to a safe 68%.
               </p>
             </div>
 
-            <div className="mt-4 pt-3 border-t border-emerald-200 flex items-center justify-between">
+            <div className="mt-4 pt-3 border-t border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="text-[11px] text-emerald-800 font-medium">Confidence: 94.6%</span>
               <button
                 onClick={() => onNavigateTab('recommendations')}
-                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition flex items-center gap-1.5"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-2 min-h-[44px] rounded-xl text-xs transition flex items-center justify-center gap-1.5"
               >
                 <span>Execute Recommendation</span>
                 <ArrowRight className="w-3.5 h-3.5" />

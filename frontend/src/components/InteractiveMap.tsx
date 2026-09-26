@@ -274,8 +274,20 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
     initGoogleMap();
 
+    // Trigger Google Maps resize upon viewport and orientation changes
+    const handleMapResize = () => {
+      if (mapInstanceRef.current && window.google?.maps) {
+        window.google.maps.event.trigger(mapInstanceRef.current, 'resize');
+      }
+    };
+
+    window.addEventListener('resize', handleMapResize);
+    window.addEventListener('orientationchange', handleMapResize);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('resize', handleMapResize);
+      window.removeEventListener('orientationchange', handleMapResize);
     };
   }, [apiKey]);
 
@@ -610,8 +622,8 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         </div>
       </div>
 
-      {/* Main Map Container */}
-      <div className="relative w-full h-[420px] bg-slate-950 overflow-hidden select-none">
+      {/* Main Map Container with Responsive Heights */}
+      <div className="relative w-full h-[340px] sm:h-[400px] md:h-[450px] lg:h-[480px] bg-slate-950 overflow-hidden select-none min-w-0">
         {/* Real Google Map Element */}
         <div
           ref={mapContainerRef}
@@ -620,29 +632,29 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
 
         {/* Clean Fallback State if Google Maps API key is missing or invalid */}
         {(!mapLoaded || loadError) && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-center">
-            <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 mb-3 shadow-lg">
-              <MapPinOff className="w-8 h-8" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-center overflow-y-auto touch-scroll">
+            <div className="p-3 sm:p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 mb-2 sm:mb-3 shadow-lg shrink-0">
+              <MapPinOff className="w-6 h-6 sm:w-8 sm:h-8" />
             </div>
 
-            <h3 className="text-base font-bold text-white font-['Outfit'] mb-1">
+            <h3 className="text-sm sm:text-base font-bold text-white font-['Outfit'] mb-1">
               Google Maps is unavailable
             </h3>
-            <p className="text-xs text-amber-300 font-semibold mb-2">
+            <p className="text-[11px] sm:text-xs text-amber-300 font-semibold mb-1.5 sm:mb-2 max-w-md">
               Configure a valid Google Maps API key and ensure the required Google Maps APIs are enabled.
             </p>
-            <p className="text-xs text-slate-400 max-w-md mb-4">
-              Add <code className="bg-slate-800 px-1.5 py-0.5 rounded text-amber-300 font-mono text-[11px]">VITE_GOOGLE_MAPS_API_KEY</code> in <code className="bg-slate-800 px-1.5 py-0.5 rounded text-blue-300 font-mono text-[11px]">frontend/.env</code> to render real road networks, DirectionsService highway routing, and interactive transit tiles.
+            <p className="text-[10px] sm:text-xs text-slate-400 max-w-md mb-3 sm:mb-4">
+              Add <code className="bg-slate-800 px-1 py-0.5 rounded text-amber-300 font-mono text-[10px] sm:text-[11px]">VITE_GOOGLE_MAPS_API_KEY</code> in <code className="bg-slate-800 px-1 py-0.5 rounded text-blue-300 font-mono text-[10px] sm:text-[11px]">frontend/.env</code> to render real road networks, DirectionsService highway routing, and interactive transit tiles.
             </p>
 
-            <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3.5 max-w-lg w-full text-left text-xs mb-4 shadow-xl">
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-800 font-medium text-slate-200">
-                <Key className="w-3.5 h-3.5 text-blue-400" />
+            <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-3 sm:p-3.5 max-w-lg w-full text-left text-[11px] sm:text-xs mb-3 shadow-xl">
+              <div className="flex items-center gap-2 pb-1.5 sm:pb-2 border-b border-slate-800 font-medium text-slate-200">
+                <Key className="w-3.5 h-3.5 text-blue-400 shrink-0" />
                 <span>Environment Configuration Guide</span>
               </div>
-              <div className="mt-2.5 space-y-1.5 text-[11px] text-slate-400">
+              <div className="mt-2 space-y-1.5 text-[10px] sm:text-[11px] text-slate-400">
                 <p>1. Open or create <code className="text-blue-300 font-mono">frontend/.env</code></p>
-                <div className="p-2 rounded bg-slate-950 font-mono text-emerald-400 text-[10px] border border-slate-800 select-all">
+                <div className="p-1.5 sm:p-2 rounded bg-slate-950 font-mono text-emerald-400 text-[9.5px] sm:text-[10px] border border-slate-800 select-all overflow-x-auto">
                   VITE_GOOGLE_MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
                 </div>
                 <p>2. Ensure <strong>Maps JavaScript API</strong> & <strong>Routes / Directions API</strong> are enabled in Google Cloud Console.</p>
@@ -651,22 +663,22 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             </div>
 
             {/* Configured Route 1 Stop Coordinates Table */}
-            <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl px-3 py-2 text-[10px] text-slate-400 max-w-lg w-full flex items-center justify-between font-mono">
-              <span>Configured NRIIT Route 1 Corridor:</span>
-              <span className="text-blue-400">8 Real Geographic Waypoints Ready</span>
+            <div className="bg-slate-950/80 border border-slate-800/80 rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 text-[9px] sm:text-[10px] text-slate-400 max-w-lg w-full flex items-center justify-between font-mono">
+              <span className="truncate">Configured NRIIT Route 1 Corridor:</span>
+              <span className="text-blue-400 shrink-0 ml-2">8 Real Waypoints Ready</span>
             </div>
           </div>
         )}
 
-        {/* Live Overlay Telemetry HUD (Bottom Left) */}
-        <div className="absolute bottom-3 left-3 bg-slate-950/90 backdrop-blur-md p-3 rounded-xl border border-slate-800 text-xs shadow-2xl max-w-xs pointer-events-auto z-10">
+        {/* Live Overlay Telemetry HUD (Bottom Left) - Responsive */}
+        <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 bg-slate-950/92 backdrop-blur-md p-2.5 sm:p-3 rounded-xl border border-slate-800 text-[11px] sm:text-xs shadow-2xl max-w-[calc(100%-1rem)] sm:max-w-xs pointer-events-auto z-10">
           <div className="flex items-center justify-between gap-3 pb-1 border-b border-slate-800">
-            <span className="font-bold text-white flex items-center gap-1.5">
-              <Bus className="w-3.5 h-3.5 text-blue-400" />
-              {route.assignedVehicle}
+            <span className="font-bold text-white flex items-center gap-1.5 truncate">
+              <Bus className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <span className="truncate">{route.assignedVehicle}</span>
             </span>
             <span
-              className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+              className={`px-2 py-0.5 rounded text-[9px] sm:text-[10px] font-bold shrink-0 ${
                 route.riskLevel === 'HIGH'
                   ? 'bg-red-500/20 text-red-400 border border-red-500/40'
                   : 'bg-emerald-500/20 text-emerald-400'
@@ -676,7 +688,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-2 text-[11px]">
+          <div className="grid grid-cols-2 gap-2 mt-2 text-[10px] sm:text-[11px]">
             <div>
               <span className="text-slate-400">Current Occupancy:</span>
               <p className="font-mono font-bold text-slate-200">
@@ -700,17 +712,17 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           </div>
         </div>
 
-        {/* Selected Stop Details Popover (Top Right) */}
+        {/* Selected Stop Details Popover (Top Right) - Responsive */}
         {selectedStop && (
-          <div className="absolute top-4 right-4 bg-slate-950/95 backdrop-blur-md p-3.5 rounded-xl border border-blue-500/50 text-xs shadow-2xl w-64 animate-in fade-in z-10">
+          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-slate-950/95 backdrop-blur-md p-3 sm:p-3.5 rounded-xl border border-blue-500/50 text-xs shadow-2xl w-[calc(100%-1rem)] sm:w-64 max-w-xs animate-in fade-in z-20">
             <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
-              <span className="font-bold text-blue-400 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5" />
-                {selectedStop.name}
+              <span className="font-bold text-blue-400 flex items-center gap-1 truncate">
+                <MapPin className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">{selectedStop.name}</span>
               </span>
               <button
                 onClick={() => setSelectedStop(null)}
-                className="text-slate-400 hover:text-white text-xs px-1"
+                className="text-slate-400 hover:text-white text-xs px-2 py-1 min-h-[30px] min-w-[30px] flex items-center justify-center rounded"
                 aria-label="Close Stop Popover"
               >
                 ✕

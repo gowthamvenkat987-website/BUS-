@@ -93,7 +93,7 @@ export const AttendancePage: React.FC<AttendancePageProps> = ({
       </div>
 
       {/* KPI Cards: Total, Present, Absent, Attendance % */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 text-xs font-medium">
             <span>TOTAL STUDENTS</span>
@@ -180,7 +180,7 @@ export const AttendancePage: React.FC<AttendancePageProps> = ({
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Department Attendance Bar Chart */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs min-w-0">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
               <h3 className="text-sm font-bold text-slate-900 font-['Outfit']">
@@ -195,7 +195,7 @@ export const AttendancePage: React.FC<AttendancePageProps> = ({
             </span>
           </div>
 
-          <div className="mt-4 h-64 w-full">
+          <div className="mt-4 h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={deptData} margin={{ top: 10, right: 10, left: -10, bottom: 15 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -211,7 +211,7 @@ export const AttendancePage: React.FC<AttendancePageProps> = ({
         </div>
 
         {/* Hourly Attendance vs Transit Demand */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs min-w-0">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
               <h3 className="text-sm font-bold text-slate-900 font-['Outfit']">
@@ -226,7 +226,7 @@ export const AttendancePage: React.FC<AttendancePageProps> = ({
             </span>
           </div>
 
-          <div className="mt-4 h-64 w-full">
+          <div className="mt-4 h-64 w-full min-w-0">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={hourlyTrend} margin={{ top: 10, right: 15, left: -10, bottom: 15 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />

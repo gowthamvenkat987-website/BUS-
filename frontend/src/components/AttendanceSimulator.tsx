@@ -82,33 +82,33 @@ export const AttendanceSimulator: React.FC<AttendanceSimulatorProps> = ({
         Simulated AI Prediction Loop
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-bold text-slate-900 font-['Outfit']">
               Demo Attendance Simulator
             </h3>
-            <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded">
+            <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded shrink-0">
               Interactive What-If Engine
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-0.5 break-anywhere">
             Test how real-time classroom attendance percentages propagate into the AI bus overcrowding model.
           </p>
         </div>
 
         {/* Live Outcome Badge */}
-        <div className="flex items-center gap-3">
-          <div className="text-right">
+        <div className="flex items-center gap-3 self-start sm:self-auto shrink-0">
+          <div className="text-left sm:text-right">
             <p className="text-[11px] text-slate-400 font-medium">Route 1 Predicted Occupancy</p>
-            <p className="text-lg font-extrabold text-slate-900 font-mono">
+            <p className="text-base sm:text-lg font-extrabold text-slate-900 font-mono">
               {predictedDemand} <span className="text-xs font-normal text-slate-500">/ {capacity} seats</span>
               <span className={`ml-2 text-sm font-bold ${riskLevel === 'HIGH' ? 'text-red-600' : riskLevel === 'MODERATE' ? 'text-amber-600' : 'text-emerald-600'}`}>
                 ({occupancyPct}%)
               </span>
             </p>
           </div>
-          <div className={`p-2.5 rounded-xl border ${
+          <div className={`p-2.5 rounded-xl border shrink-0 ${
             riskLevel === 'HIGH' ? 'bg-red-50 border-red-200 text-red-600' : riskLevel === 'MODERATE' ? 'bg-amber-50 border-amber-200 text-amber-600' : 'bg-emerald-50 border-emerald-200 text-emerald-600'
           }`}>
             {riskLevel === 'HIGH' ? <AlertTriangle className="w-6 h-6 animate-bounce" /> : riskLevel === 'MODERATE' ? <TrendingUp className="w-6 h-6" /> : <CheckCircle className="w-6 h-6" />}
@@ -132,18 +132,18 @@ export const AttendanceSimulator: React.FC<AttendanceSimulatorProps> = ({
           max="99"
           value={currentAttendance}
           onChange={(e) => onSimulate(Number(e.target.value))}
-          className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+          className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600 min-h-[44px]"
         />
 
-        {/* Quick Preset Buttons */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1">
+        {/* Quick Preset Buttons (min 44px touch targets) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 pt-1">
           {presets.map((p) => {
             const isSelected = currentAttendance === p.pct;
             return (
               <button
                 key={p.pct}
                 onClick={() => onSimulate(p.pct)}
-                className={`px-3 py-2 rounded-xl text-left border transition-all text-xs ${
+                className={`min-h-[44px] px-3 py-2 rounded-xl text-left border transition-all text-xs flex flex-col justify-center ${
                   isSelected
                     ? 'border-blue-600 bg-blue-50/80 shadow-xs ring-1 ring-blue-500'
                     : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100 hover:border-slate-300'
@@ -151,7 +151,7 @@ export const AttendanceSimulator: React.FC<AttendanceSimulatorProps> = ({
               >
                 <div className="flex items-center justify-between">
                   <span className="font-extrabold text-slate-900 font-mono text-sm">{p.pct}%</span>
-                  <span className={`text-[9px] font-bold px-1 rounded ${
+                  <span className={`text-[9px] font-bold px-1 rounded shrink-0 ${
                     p.tag === 'CRITICAL' || p.tag === 'OVERCROWDED' ? 'bg-red-100 text-red-700' : p.tag === 'HIGH' ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
                   }`}>
                     {p.tag}
@@ -164,16 +164,16 @@ export const AttendanceSimulator: React.FC<AttendanceSimulatorProps> = ({
         </div>
 
         {/* Attendance-to-Transit Pipeline Indicator */}
-        <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-[11px] text-slate-600 gap-2 bg-slate-50 p-2.5 rounded-xl">
-          <div className="flex items-center gap-1 font-semibold text-slate-700">
+        <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between text-[11px] text-slate-600 gap-2 bg-slate-50 p-2.5 rounded-xl overflow-x-auto touch-scroll">
+          <div className="flex flex-wrap items-center gap-1.5 font-semibold text-slate-700">
             <span>Flow:</span>
-            <span className="text-blue-700 font-bold">ATTENDANCE ({currentAttendance}%)</span>
-            <ArrowRight className="w-3 h-3 text-slate-400" />
-            <span className="text-indigo-700 font-bold">TRAVEL INFLUX</span>
-            <ArrowRight className="w-3 h-3 text-slate-400" />
-            <span className="text-purple-700 font-bold">ROUTE 1 DEMAND ({predictedDemand})</span>
-            <ArrowRight className="w-3 h-3 text-slate-400" />
-            <span className={`font-bold ${riskLevel === 'HIGH' ? 'text-red-600' : 'text-emerald-600'}`}>
+            <span className="text-blue-700 font-bold whitespace-nowrap">ATTENDANCE ({currentAttendance}%)</span>
+            <ArrowRight className="w-3 h-3 text-slate-400 shrink-0" />
+            <span className="text-indigo-700 font-bold whitespace-nowrap">TRAVEL INFLUX</span>
+            <ArrowRight className="w-3 h-3 text-slate-400 shrink-0" />
+            <span className="text-purple-700 font-bold whitespace-nowrap">ROUTE 1 DEMAND ({predictedDemand})</span>
+            <ArrowRight className="w-3 h-3 text-slate-400 shrink-0" />
+            <span className={`font-bold whitespace-nowrap ${riskLevel === 'HIGH' ? 'text-red-600' : 'text-emerald-600'}`}>
               {riskLevel === 'HIGH' ? 'OVERCROWD RISK ⚠' : 'BALANCED OCCUPANCY ✓'}
             </span>
           </div>

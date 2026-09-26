@@ -50,15 +50,15 @@ export const AIAlertsPage: React.FC<AIAlertsPageProps> = ({
         </div>
 
         {/* Filter Pills */}
-        <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-xs text-xs">
+        <div className="flex items-center bg-white p-1 rounded-xl border border-slate-200 shadow-xs text-xs overflow-x-auto max-w-full touch-scroll">
           {(['all', 'active', 'acknowledged', 'resolved'] as const).map((st) => (
             <button
               key={st}
               onClick={() => setFilter(st)}
-              className={`px-3 py-1.5 rounded-lg font-bold capitalize transition ${
+              className={`px-3.5 py-2 min-h-[44px] rounded-lg font-bold capitalize transition whitespace-nowrap flex items-center justify-center ${
                 filter === st
                   ? 'bg-blue-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
               {st}
@@ -68,21 +68,21 @@ export const AIAlertsPage: React.FC<AIAlertsPageProps> = ({
       </div>
 
       {/* Prominent High Overcrowding Alert Callout */}
-      <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-xl bg-red-600 text-white shadow-sm animate-pulse">
+      <div className="bg-red-50 border-2 border-red-300 rounded-2xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <div className="p-3 rounded-xl bg-red-600 text-white shadow-sm animate-pulse shrink-0">
             <AlertTriangle className="w-6 h-6" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm font-bold text-red-950 font-['Outfit']">
                 ⚠ HIGH OVERCROWDING RISK: Route 1
               </span>
-              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded">
+              <span className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded shrink-0">
                 Simulated AI Prediction
               </span>
             </div>
-            <p className="text-xs text-red-800 mt-0.5">
+            <p className="text-xs text-red-800 mt-0.5 break-anywhere">
               Route 1 (Mangalagiri to NRIIT) is predicted to exceed seating capacity (116% occupancy) within 20 minutes due to 63 students queued at Kaza and Chinna Kakani.
             </p>
           </div>
@@ -90,7 +90,7 @@ export const AIAlertsPage: React.FC<AIAlertsPageProps> = ({
 
         <button
           onClick={() => onNavigateTab('recommendations')}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 shrink-0 shadow-sm"
+          className="w-full sm:w-auto min-h-[44px] bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shrink-0 shadow-sm"
         >
           <span>View Recommended Relief Action</span>
           <ArrowRight className="w-4 h-4" />
@@ -106,7 +106,7 @@ export const AIAlertsPage: React.FC<AIAlertsPageProps> = ({
           return (
             <div
               key={alt.id}
-              className={`bg-white rounded-xl border p-4.5 shadow-xs transition hover:shadow-md ${
+              className={`bg-white rounded-xl border p-4 sm:p-4.5 shadow-xs transition hover:shadow-md min-w-0 ${
                 isDanger
                   ? 'border-red-300 ring-1 ring-red-200'
                   : isWarning
@@ -116,18 +116,18 @@ export const AIAlertsPage: React.FC<AIAlertsPageProps> = ({
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
                 <div className="flex items-center gap-2">
-                  <div className={`p-1.5 rounded-lg ${
+                  <div className={`p-1.5 rounded-lg shrink-0 ${
                     isDanger ? 'bg-red-100 text-red-700' : isWarning ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'
                   }`}>
                     {isDanger ? <AlertTriangle className="w-4 h-4" /> : isWarning ? <TrendingUp className="w-4 h-4" /> : <Bus className="w-4 h-4" />}
                   </div>
-                  <h3 className="text-sm font-bold text-slate-900">{alt.title}</h3>
-                  <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">
+                  <h3 className="text-sm font-bold text-slate-900 break-anywhere">{alt.title}</h3>
+                  <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono shrink-0">
                     AI Prediction
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 text-xs">
+                <div className="flex items-center gap-3 text-xs self-start sm:self-auto shrink-0">
                   <span className="text-slate-400 flex items-center gap-1 font-mono text-[11px]">
                     <Clock className="w-3 h-3" />
                     {alt.timestamp}
@@ -144,30 +144,30 @@ export const AIAlertsPage: React.FC<AIAlertsPageProps> = ({
                 </div>
               </div>
 
-              <p className="text-xs text-slate-700 mt-2.5 leading-relaxed">
+              <p className="text-xs text-slate-700 mt-2.5 leading-relaxed break-anywhere">
                 {alt.message}
               </p>
 
-              <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="mt-3 pt-2.5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                 <div className="text-[11px] text-slate-500 font-mono">
                   Affected Corridor: <strong className="text-slate-800">{alt.routeId}</strong>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
                   {alt.status === 'active' && (
                     <button
                       onClick={() => onAcknowledge(alt.id)}
-                      className="px-3 py-1 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold text-[11px]"
+                      className="px-3.5 py-2 min-h-[44px] rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 font-semibold text-xs flex items-center justify-center"
                     >
                       Acknowledge Alert
                     </button>
                   )}
                   <button
                     onClick={() => onNavigateTab('recommendations')}
-                    className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 text-[11px]"
+                    className="min-h-[44px] px-3 py-2 text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 text-xs"
                   >
                     <span>View Prescriptive Action</span>
-                    <ArrowRight className="w-3 h-3" />
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
