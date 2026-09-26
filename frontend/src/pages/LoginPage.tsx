@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Bus, ArrowRight, ShieldCheck, RefreshCw, AlertCircle, Phone, Mail, ArrowLeft, CheckCircle2, KeyRound } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
 
-type AuthMethod = 'PHONE' | 'EMAIL';
+type AuthMethod = 'EMAIL' | 'PHONE';
 type AuthStep = 'INPUT' | 'OTP';
 
 interface LoginPageProps {
@@ -10,7 +10,8 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
-  const [authMethod, setAuthMethod] = useState<AuthMethod>('PHONE');
+  // EMAIL OTP is primary working authentication method
+  const [authMethod, setAuthMethod] = useState<AuthMethod>('EMAIL');
   const [step, setStep] = useState<AuthStep>('INPUT');
   const [countryCode] = useState('+91');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -19,6 +20,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showDirectOtpEntry, setShowDirectOtpEntry] = useState(false);
   const [countdown, setCountdown] = useState<number>(30);
   const [canResend, setCanResend] = useState<boolean>(false);
 
@@ -56,73 +58,63 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     setStep('INPUT');
     setErrorMessage(null);
     setSuccessMessage(null);
+    setShowDirectOtpEntry(false);
     setOtp(['', '', '', '', '', '']);
   };
 
-  // STEP 1: Send Real OTP via Supabase Auth
+  // STEP 1: Send Real Email OTP via Supabase Auth
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
+    setShowDirectOtpEntry(false);
+
+    if (authMethod === 'PHONE') {
+      setErrorMessage('Phone OTP is currently unavailable. Please use Email OTP.');
+      return;
+    }
+
+    if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
 
     if (!isSupabaseConfigured()) {
       setErrorMessage('Supabase authentication is not configured. Please check the environment variables.');
       return;
     }
 
-    if (authMethod === 'PHONE') {
-      if (cleanPhone.length !== 10) {
-        setErrorMessage('Please enter a valid 10-digit mobile number.');
-        return;
-      }
-    } else {
-      if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
-        setErrorMessage('Please enter a valid email address.');
-        return;
-      }
-    }
-
     setIsLoading(true);
 
     try {
-      let error = null;
+      // 8-second timeout safeguard so requests never hang or time out silently
+      const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timed out. Please check your network and try again.')), 8000)
+      );
 
-      if (authMethod === 'PHONE') {
-        const res = await supabase.auth.signInWithOtp({
-          phone: fullPhone
-        });
-        error = res.error;
-      } else {
-        const res = await supabase.auth.signInWithOtp({
-          email: cleanEmail,
-          options: {
-            shouldCreateUser: true
-          }
-        });
-        error = res.error;
-      }
+      const res = await Promise.race([
+        supabase.auth.signInWithOtp({
+          email: cleanEmail
+        }),
+        timeoutPromise
+      ]);
+
+      const { error } = res;
 
       if (error) {
         const msg = error.message.toLowerCase();
-        if (msg.includes('phone_provider_disabled') || msg.includes('unsupported phone provider') || (authMethod === 'PHONE' && (msg.includes('provider') || msg.includes('sms')))) {
-          setErrorMessage(
-            'Phone/SMS provider is not enabled in your Supabase project. To receive SMS OTP, enable the Phone provider under Authentication > Providers > Phone in your Supabase Dashboard.'
-          );
-        } else if (msg.includes('email_provider_disabled') || (authMethod === 'EMAIL' && msg.includes('provider disabled'))) {
-          setErrorMessage(
-            'Email provider is not enabled in your Supabase project. Please enable the Email provider under Authentication > Providers > Email in your Supabase Dashboard.'
-          );
-        } else if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit')) {
-          setErrorMessage('Supabase OTP rate limit reached. Please wait a few minutes before requesting another OTP.');
+        if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit')) {
+          setErrorMessage('Supabase email OTP rate limit reached. If a 6-digit code was already sent to your email, you can enter it below.');
+          setShowDirectOtpEntry(true);
         } else if (msg.includes('email_address_invalid') || msg.includes('is invalid')) {
           setErrorMessage('Email address is invalid. Please enter a valid email address.');
-        } else if (msg.includes('invalid api key') || msg.includes('jwt')) {
-          setErrorMessage('Invalid Supabase API key. Please check your project credentials in frontend/.env.');
+        } else if (msg.includes('provider') || msg.includes('disabled')) {
+          setErrorMessage('Email provider is disabled in your Supabase project. Enable Email under Authentication > Providers > Email.');
         } else {
-          setErrorMessage(error.message || 'Unable to send OTP. Please check your phone/email and Supabase authentication configuration.');
+          setErrorMessage(error.message || 'Unable to send OTP. Please check your email address.');
         }
       } else {
-        setSuccessMessage('OTP sent successfully.');
+        setSuccessMessage('OTP sent successfully. Please check your email inbox.');
         setStep('OTP');
         setCountdown(30);
         setCanResend(false);
@@ -132,13 +124,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         }, 100);
       }
     } catch (err: any) {
-      setErrorMessage('Unable to send OTP. Please check your phone/email and Supabase authentication configuration.');
+      setErrorMessage(err.message || 'Unable to send OTP. Please check your network connection.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // STEP 2: Verify Real OTP via Supabase Auth
+  // STEP 2: Verify Real Email OTP via Supabase Auth
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
@@ -153,22 +145,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      let result;
-      if (authMethod === 'PHONE') {
-        result = await supabase.auth.verifyOtp({
-          phone: fullPhone,
-          token,
-          type: 'sms'
-        });
-      } else {
-        result = await supabase.auth.verifyOtp({
+      // 8-second timeout safeguard
+      const timeoutPromise = new Promise<{ data: null; error: Error }>((_, reject) =>
+        setTimeout(() => reject(new Error('Verification timed out. Please try again.')), 8000)
+      );
+
+      const res = await Promise.race([
+        supabase.auth.verifyOtp({
           email: cleanEmail,
           token,
           type: 'email'
-        });
-      }
+        }),
+        timeoutPromise
+      ]);
 
-      const { data, error } = result;
+      const { data, error } = res;
 
       if (error) {
         if (error.message.toLowerCase().includes('expired')) {
@@ -177,7 +168,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           setErrorMessage('Invalid OTP. Please try again.');
         }
       } else if (data?.session?.user || data?.user) {
-        setSuccessMessage('Authentication successful.');
+        setSuccessMessage('Authentication successful. Opening Dashboard...');
         const authenticatedUser = data.session?.user || data.user;
         setTimeout(() => {
           onLoginSuccess(authenticatedUser);
@@ -186,13 +177,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         setErrorMessage('Invalid OTP. Please try again.');
       }
     } catch (err: any) {
-      setErrorMessage('Verification failed. Please try again.');
+      setErrorMessage(err.message || 'Verification failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Resend Real OTP via Supabase Auth
+  // Resend Real Email OTP via Supabase Auth
   const handleResendOtp = async () => {
     if (!canResend || isLoading) return;
     setErrorMessage(null);
@@ -200,29 +191,26 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      let error = null;
-      if (authMethod === 'PHONE') {
-        const res = await supabase.auth.signInWithOtp({ phone: fullPhone });
-        error = res.error;
-      } else {
-        const res = await supabase.auth.signInWithOtp({
-          email: cleanEmail,
-          options: { shouldCreateUser: true }
-        });
-        error = res.error;
-      }
+      const res = await supabase.auth.signInWithOtp({
+        email: cleanEmail
+      });
 
-      if (error) {
-        setErrorMessage(error.message || 'Unable to send OTP. Please check your phone/email and Supabase authentication configuration.');
+      if (res.error) {
+        const msg = res.error.message.toLowerCase();
+        if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit')) {
+          setErrorMessage('Supabase email OTP rate limit reached. Please check your inbox for the previous code.');
+        } else {
+          setErrorMessage(res.error.message || 'Unable to resend OTP.');
+        }
       } else {
-        setSuccessMessage('OTP sent successfully.');
+        setSuccessMessage('New OTP sent successfully. Please check your email.');
         setCountdown(30);
         setCanResend(false);
         setOtp(['', '', '', '', '', '']);
         otpInputsRef.current[0]?.focus();
       }
     } catch (err: any) {
-      setErrorMessage('Failed to resend OTP. Please try again later.');
+      setErrorMessage('Failed to resend OTP. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -302,19 +290,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             <div className="flex bg-slate-100 p-1 rounded-xl">
               <button
                 type="button"
-                id="tab-auth-phone"
-                onClick={() => handleSelectAuthMethod('PHONE')}
-                className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
-                  authMethod === 'PHONE'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                <Phone className="w-3.5 h-3.5" />
-                <span>Mobile Number</span>
-              </button>
-              <button
-                type="button"
                 id="tab-auth-email"
                 onClick={() => handleSelectAuthMethod('EMAIL')}
                 className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
@@ -326,6 +301,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 <Mail className="w-3.5 h-3.5" />
                 <span>Email</span>
               </button>
+              <button
+                type="button"
+                id="tab-auth-phone"
+                onClick={() => handleSelectAuthMethod('PHONE')}
+                className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  authMethod === 'PHONE'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>Mobile Number</span>
+              </button>
             </div>
           </div>
         )}
@@ -334,7 +322,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         <div className={step === 'INPUT' ? 'mb-4' : 'mt-6 mb-4'}>
           <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
             <span className={step === 'INPUT' ? 'text-blue-600 font-bold' : 'text-slate-400'}>
-              1. {authMethod === 'PHONE' ? 'Mobile Number' : 'Email Address'}
+              1. {authMethod === 'EMAIL' ? 'Email Address' : 'Mobile Number'}
             </span>
             <span className={step === 'OTP' ? 'text-blue-600 font-bold' : 'text-slate-400'}>
               2. OTP Verification
@@ -349,9 +337,26 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
         {/* Status Messages */}
         {errorMessage && (
-          <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700 flex items-start gap-2 animate-in fade-in">
-            <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-            <span className="leading-relaxed">{errorMessage}</span>
+          <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700 flex flex-col gap-2 animate-in fade-in">
+            <div className="flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{errorMessage}</span>
+            </div>
+            {showDirectOtpEntry && step === 'INPUT' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setStep('OTP');
+                  setCountdown(30);
+                  setCanResend(false);
+                  setTimeout(() => otpInputsRef.current[0]?.focus(), 100);
+                }}
+                className="mt-1 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-lg text-xs transition flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+              >
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>Enter 6-Digit Code from Email →</span>
+              </button>
+            )}
           </div>
         )}
 
@@ -362,57 +367,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </div>
         )}
 
-        {/* Unconfigured Configuration Error Banner (Only shown if env vars are missing) */}
-        {!isSupabaseConfigured() && (
-          <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1 animate-in fade-in">
-            <div className="flex items-center gap-1.5 font-bold text-amber-900">
-              <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
-              <span>Configuration Required</span>
-            </div>
-            <p className="text-[11px] text-amber-800 leading-relaxed">
-              Supabase authentication is not configured. Please check the environment variables in frontend/.env.
-            </p>
-          </div>
-        )}
-
-        {/* STEP 1: Input Screen (Mobile Number or Email) */}
+        {/* STEP 1: Input Screen (Email or Mobile Number) */}
         {step === 'INPUT' && (
           <form onSubmit={handleSendOtp} className="space-y-4">
-            {authMethod === 'PHONE' ? (
-              <div>
-                <label className="font-semibold text-slate-700 text-xs block mb-1.5">
-                  Country & Mobile Number
-                </label>
-                
-                <div className="flex gap-2">
-                  {/* Fixed Country: India +91 */}
-                  <div className="w-24 shrink-0">
-                    <div className="w-full min-h-[48px] px-2 py-2.5 rounded-xl border border-slate-300 bg-slate-50 font-bold text-xs text-slate-800 flex items-center justify-center gap-1">
-                      <span>🇮🇳 +91</span>
-                    </div>
-                  </div>
-
-                  {/* Mobile Number Input */}
-                  <div className="relative flex-1">
-                    <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-4 pointer-events-none" />
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      required
-                      autoFocus
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                      placeholder="Enter mobile number"
-                      maxLength={10}
-                      className="w-full min-h-[48px] pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-blue-600 focus:border-blue-600 bg-white"
-                    />
-                  </div>
-                </div>
-                <p className="text-[11px] text-slate-500 mt-1.5">
-                  We’ll send a 6-digit OTP to your mobile number.
-                </p>
-              </div>
-            ) : (
+            {authMethod === 'EMAIL' ? (
               <div>
                 <label className="font-semibold text-slate-700 text-xs block mb-1.5">
                   College / Institutional Email
@@ -432,30 +390,67 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 <p className="text-[11px] text-slate-500 mt-1.5">
                   We’ll send a 6-digit OTP to your email address.
                 </p>
+
+                <button
+                  type="submit"
+                  disabled={isLoading || !cleanEmail || !cleanEmail.includes('@')}
+                  id="btn-send-otp"
+                  className="mt-4 w-full min-h-[48px] bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-bold py-3 rounded-xl transition shadow-sm flex items-center justify-center gap-2 text-sm cursor-pointer disabled:cursor-not-allowed"
+                >
+                  {isLoading ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Sending OTP...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send OTP</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3 text-xs flex items-start gap-2 mb-3">
+                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <span>Phone OTP is currently unavailable. Please use Email OTP.</span>
+                </div>
+
+                <label className="font-semibold text-slate-700 text-xs block mb-1.5 opacity-70">
+                  Country & Mobile Number
+                </label>
+                
+                <div className="flex gap-2 opacity-70">
+                  <div className="w-24 shrink-0">
+                    <div className="w-full min-h-[48px] px-2 py-2.5 rounded-xl border border-slate-300 bg-slate-50 font-bold text-xs text-slate-800 flex items-center justify-center gap-1">
+                      <span>🇮🇳 +91</span>
+                    </div>
+                  </div>
+
+                  <div className="relative flex-1">
+                    <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-4 pointer-events-none" />
+                    <input
+                      type="tel"
+                      disabled
+                      value={phoneNumber}
+                      placeholder="Enter mobile number"
+                      className="w-full min-h-[48px] pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-500 bg-slate-50 cursor-not-allowed"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => handleSelectAuthMethod('EMAIL')}
+                  className="mt-4 w-full min-h-[48px] bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition shadow-sm flex items-center justify-center gap-2 text-sm cursor-pointer"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Continue with Email OTP</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
               </div>
             )}
-
-            <button
-              type="submit"
-              disabled={
-                isLoading || 
-                (authMethod === 'PHONE' ? cleanPhone.length !== 10 : (!cleanEmail || !cleanEmail.includes('@')))
-              }
-              id="btn-send-otp"
-              className="w-full min-h-[48px] bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-bold py-3 rounded-xl transition shadow-sm flex items-center justify-center gap-2 text-sm cursor-pointer disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Sending OTP...</span>
-                </>
-              ) : (
-                <>
-                  <span>Send OTP</span>
-                  <ArrowRight className="w-4 h-4" />
-                </>
-              )}
-            </button>
           </form>
         )}
 
@@ -473,12 +468,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                     setStep('INPUT');
                     setErrorMessage(null);
                     setSuccessMessage(null);
+                    setShowDirectOtpEntry(false);
                     setOtp(['', '', '', '', '', '']);
                   }}
                   className="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-1 cursor-pointer"
                 >
                   <ArrowLeft className="w-3 h-3" />
-                  <span>{authMethod === 'PHONE' ? 'Change Mobile Number' : 'Change Email'}</span>
+                  <span>Change Email</span>
                 </button>
               </div>
 
@@ -489,11 +485,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="font-mono font-bold text-slate-900 tracking-wider text-xs">
-                    {authMethod === 'PHONE' ? getMaskedPhone() : cleanEmail}
+                    {cleanEmail || (authMethod === 'PHONE' ? getMaskedPhone() : 'your email')}
                   </span>
                   <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
                     <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>{authMethod === 'PHONE' ? 'SMS Dispatched' : 'Email Dispatched'}</span>
+                    <span>Email Dispatched</span>
                   </span>
                 </div>
               </div>
