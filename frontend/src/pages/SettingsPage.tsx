@@ -9,10 +9,18 @@ import {
   Radio, 
   Layers, 
   Sparkles,
-  ExternalLink
+  ExternalLink,
+  LogOut,
+  UserCheck,
+  ShieldCheck
 } from 'lucide-react';
 
-export const SettingsPage: React.FC = () => {
+interface SettingsPageProps {
+  onLogout?: () => void;
+  currentUser?: any;
+}
+
+export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout, currentUser }) => {
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -23,6 +31,40 @@ export const SettingsPage: React.FC = () => {
         <p className="text-xs sm:text-sm text-slate-600 mt-1">
           Technical specifications, data disclaimers, and roadmap for real-world deployment at NRI Institute of Technology.
         </p>
+      </div>
+
+      {/* User Session & Logout Section */}
+      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-100 shrink-0">
+            <UserCheck className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 className="text-sm font-bold text-slate-900 font-['Outfit']">
+                Active User Session
+              </h2>
+              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1">
+                <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                Supabase Authenticated
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              Connected: <span className="font-mono font-semibold text-slate-800">{currentUser?.phone || currentUser?.email || '+91 98765 43210'}</span>
+            </p>
+          </div>
+        </div>
+
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            id="btn-settings-logout"
+            className="flex items-center justify-center gap-2 bg-red-50 hover:bg-red-100 text-red-700 font-semibold text-xs px-4 py-2.5 rounded-xl border border-red-200 transition cursor-pointer min-h-[44px] shrink-0"
+          >
+            <LogOut className="w-4 h-4 text-red-600" />
+            <span>Log Out from NRI University Bus</span>
+          </button>
+        )}
       </div>
 
       {/* Mandatory Data Disclaimer Banner (Section 34 of Prompt) */}
@@ -125,9 +167,9 @@ export const SettingsPage: React.FC = () => {
             <div className="flex items-start gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               <div>
-                <strong className="text-slate-900">Google Maps Platform Live Transit API:</strong>
+                <strong className="text-slate-900">High-Precision Telemetry & GPS Tracking Engine:</strong>
                 <p className="text-slate-600 text-[11px] mt-0.5">
-                  Turnkey migration from simulated SVG highway maps to live Google Maps Distance Matrix API with real-time Vijayawada traffic delays.
+                  High-frequency real-time bus telemetry updates across the Vijayawada-Mangalagiri-NRIIT corridor with corridor speed monitoring.
                 </p>
               </div>
             </div>

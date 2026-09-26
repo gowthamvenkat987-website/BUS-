@@ -7,7 +7,8 @@ import {
   Bus,
   CheckCircle2,
   Menu,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import { College, UserRole } from '../types';
 
@@ -19,6 +20,7 @@ interface HeaderProps {
   onOpenAlerts: () => void;
   isMobileMenuOpen?: boolean;
   onToggleMobileMenu?: () => void;
+  onLogout?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -28,7 +30,8 @@ export const Header: React.FC<HeaderProps> = ({
   unreadAlertsCount,
   onOpenAlerts,
   isMobileMenuOpen = false,
-  onToggleMobileMenu
+  onToggleMobileMenu,
+  onLogout
 }) => {
   const [showNriitDropdown, setShowNriitDropdown] = useState(false);
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
@@ -178,6 +181,22 @@ export const Header: React.FC<HeaderProps> = ({
                     {userRole === r && <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />}
                   </button>
                 ))}
+
+                {onLogout && (
+                  <div className="pt-1 mt-1 border-t border-slate-100">
+                    <button
+                      onClick={() => {
+                        setShowRoleDropdown(false);
+                        onLogout();
+                      }}
+                      id="btn-logout-header"
+                      className="w-full text-left px-3 py-2.5 text-xs flex items-center gap-2 text-red-600 hover:bg-red-50 font-semibold min-h-[44px] cursor-pointer transition"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-red-500" />
+                      <span>Log Out</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>

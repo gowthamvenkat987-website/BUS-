@@ -16,14 +16,34 @@ import { BusAllocationPage } from './pages/BusAllocationPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { LoginPage } from './pages/LoginPage';
 import { api } from './services/api';
+import { supabase } from './services/supabase';
+import { Bus, RefreshCw } from 'lucide-react';
 import { College, RouteItem, Vehicle, AttendanceSession, AIAlert, Recommendation, UserRole } from './types';
 import { INITIAL_COLLEGES, INITIAL_ROUTES, INITIAL_VEHICLES, INITIAL_SESSIONS, INITIAL_ALERTS, INITIAL_RECOMMENDATIONS } from './data/mockData';
 
 export function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState<boolean>(true);
   const [userRole, setUserRole] = useState<UserRole>('ADMIN');
   const [activeTab, setActiveTab] = useState<NavTab>('dashboard');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
+
+  // Check Supabase session on mount
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUser(session?.user ?? null);
+      setIsAuthLoading(false);
+    }).catch(() => {
+      setIsAuthLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setCurrentUser(session?.user ?? null);
+      setIsAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
   
   // Data state (NRIIT Only)
   const [college] = useState<College>(INITIAL_COLLEGES[0]);
@@ -103,16 +123,41 @@ export function App() {
     return created;
   };
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (e) {
+      console.warn('SignOut note:', e);
+    }
+    setCurrentUser(null);
+  };
+
   const route1 = routes.find(r => r.id === 'route-1') || routes[0];
   const unreadAlertsCount = alerts.filter(a => a.status === 'active').length;
   const pendingRecCount = recommendations.filter(r => r.status === 'pending').length;
 
-  if (!isAuthenticated) {
+  // Session verification loading state
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-slate-100 flex flex-col items-center justify-center p-4 text-center">
+        <div className="w-14 h-14 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-xl mb-3 border border-slate-800">
+          <Bus className="w-7 h-7 text-blue-400" />
+        </div>
+        <h2 className="text-base font-bold text-slate-800 font-['Outfit']">NRI University Bus</h2>
+        <p className="text-xs text-slate-500 mt-1.5 flex items-center justify-center gap-1.5 font-medium">
+          <RefreshCw className="w-3.5 h-3.5 animate-spin text-blue-600" />
+          <span>Verifying authenticated session...</span>
+        </p>
+      </div>
+    );
+  }
+
+  // Authentication Protection Guard
+  if (!currentUser) {
     return (
       <LoginPage 
-        onLoginSuccess={(role) => {
-          setUserRole(role);
-          setIsAuthenticated(true);
+        onLoginSuccess={(user) => {
+          setCurrentUser(user);
         }} 
       />
     );
@@ -120,7 +165,7 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col antialiased w-full overflow-x-hidden">
-      {/* Universal Header (NRIIT Only) with Mobile Menu Toggle */}
+      {/* Universal Header (NRIIT Only) with Mobile Menu Toggle and Logout */}
       <Header
         college={college}
         userRole={userRole}
@@ -129,6 +174,7 @@ export function App() {
         onOpenAlerts={() => setActiveTab('ai-alerts')}
         isMobileMenuOpen={isMobileMenuOpen}
         onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        onLogout={handleLogout}
       />
 
       <div className="flex-1 flex overflow-hidden w-full relative">
@@ -239,7 +285,7 @@ export function App() {
             )}
 
             {activeTab === 'settings' && (
-              <SettingsPage />
+              <SettingsPage currentUser={currentUser} onLogout={handleLogout} />
             )}
           </div>
         </main>
