@@ -19,7 +19,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [supabaseNotice, setSupabaseNotice] = useState<string | null>(null);
   const [countdown, setCountdown] = useState<number>(30);
   const [canResend, setCanResend] = useState<boolean>(false);
 
@@ -57,7 +56,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     setStep('INPUT');
     setErrorMessage(null);
     setSuccessMessage(null);
-    setSupabaseNotice(null);
     setOtp(['', '', '', '', '', '']);
   };
 
@@ -66,7 +64,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
-    setSupabaseNotice(null);
+
+    if (!isSupabaseConfigured()) {
+      setErrorMessage('Supabase authentication is not configured. Please check the environment variables.');
+      return;
+    }
 
     if (authMethod === 'PHONE') {
       if (cleanPhone.length !== 10) {
@@ -83,22 +85,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     setIsLoading(true);
 
     try {
-      if (!isSupabaseConfigured()) {
-        setSupabaseNotice(
-          'Supabase anon key is currently placeholder in frontend/.env. Set VITE_SUPABASE_ANON_KEY to your Supabase public API key to enable live OTP delivery.'
-        );
-      }
-
       let error = null;
 
       if (authMethod === 'PHONE') {
-        // Send real SMS OTP via Supabase Phone Auth
         const res = await supabase.auth.signInWithOtp({
           phone: fullPhone
         });
         error = res.error;
       } else {
-        // Send real Email OTP via Supabase passwordless Auth
         const res = await supabase.auth.signInWithOtp({
           email: cleanEmail,
           options: {
@@ -109,20 +103,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       }
 
       if (error) {
-        if (error.message.toLowerCase().includes('api key') || error.message.toLowerCase().includes('jwt')) {
-          setSupabaseNotice(
-            `Supabase Configuration Error: ${error.message}. Please configure a valid VITE_SUPABASE_ANON_KEY in frontend/.env.`
+        const msg = error.message.toLowerCase();
+        if (msg.includes('phone_provider_disabled') || msg.includes('unsupported phone provider') || (authMethod === 'PHONE' && (msg.includes('provider') || msg.includes('sms')))) {
+          setErrorMessage(
+            'Phone/SMS provider is not enabled in your Supabase project. To receive SMS OTP, enable the Phone provider under Authentication > Providers > Phone in your Supabase Dashboard.'
           );
-        } else if (authMethod === 'PHONE' && (error.message.toLowerCase().includes('provider') || error.message.toLowerCase().includes('sms'))) {
-          setSupabaseNotice(
-            `Supabase Phone Provider: ${error.message}. Ensure an SMS Provider (Twilio/MessageBird) is enabled in your Supabase dashboard under Authentication > Providers > Phone.`
+        } else if (msg.includes('email_provider_disabled') || (authMethod === 'EMAIL' && msg.includes('provider disabled'))) {
+          setErrorMessage(
+            'Email provider is not enabled in your Supabase project. Please enable the Email provider under Authentication > Providers > Email in your Supabase Dashboard.'
           );
-        } else if (authMethod === 'EMAIL' && error.message.toLowerCase().includes('provider')) {
-          setSupabaseNotice(
-            `Supabase Email Provider: ${error.message}. Ensure Email provider is enabled in your Supabase dashboard under Authentication > Providers > Email.`
-          );
+        } else if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit')) {
+          setErrorMessage('Supabase OTP rate limit reached. Please wait a few minutes before requesting another OTP.');
+        } else if (msg.includes('email_address_invalid') || msg.includes('is invalid')) {
+          setErrorMessage('Email address is invalid. Please enter a valid email address.');
+        } else if (msg.includes('invalid api key') || msg.includes('jwt')) {
+          setErrorMessage('Invalid Supabase API key. Please check your project credentials in frontend/.env.');
+        } else {
+          setErrorMessage(error.message || 'Unable to send OTP. Please check your phone/email and Supabase authentication configuration.');
         }
-        setErrorMessage(error.message);
       } else {
         setSuccessMessage('OTP sent successfully.');
         setStep('OTP');
@@ -134,7 +132,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         }, 100);
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'An unexpected error occurred while sending OTP.');
+      setErrorMessage('Unable to send OTP. Please check your phone/email and Supabase authentication configuration.');
     } finally {
       setIsLoading(false);
     }
@@ -174,7 +172,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
       if (error) {
         if (error.message.toLowerCase().includes('expired')) {
-          setErrorMessage('OTP expired. Request a new OTP.');
+          setErrorMessage('OTP expired. Please request a new OTP.');
         } else {
           setErrorMessage('Invalid OTP. Please try again.');
         }
@@ -183,12 +181,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         const authenticatedUser = data.session?.user || data.user;
         setTimeout(() => {
           onLoginSuccess(authenticatedUser);
-        }, 500);
+        }, 400);
       } else {
-        setErrorMessage('Verification failed. Please try again.');
+        setErrorMessage('Invalid OTP. Please try again.');
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Verification failed. Please try again.');
+      setErrorMessage('Verification failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -215,7 +213,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
       }
 
       if (error) {
-        setErrorMessage(error.message);
+        setErrorMessage(error.message || 'Unable to send OTP. Please check your phone/email and Supabase authentication configuration.');
       } else {
         setSuccessMessage('OTP sent successfully.');
         setCountdown(30);
@@ -224,7 +222,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         otpInputsRef.current[0]?.focus();
       }
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to resend OTP.');
+      setErrorMessage('Failed to resend OTP. Please try again later.');
     } finally {
       setIsLoading(false);
     }
@@ -364,14 +362,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </div>
         )}
 
-        {supabaseNotice && (
-          <div className="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 space-y-1 animate-in fade-in">
-            <div className="flex items-center gap-1.5 font-bold text-blue-900">
-              <ShieldCheck className="w-4 h-4 text-blue-700 shrink-0" />
-              <span>Supabase Authentication</span>
+        {/* Unconfigured Configuration Error Banner (Only shown if env vars are missing) */}
+        {!isSupabaseConfigured() && (
+          <div className="mb-4 bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1 animate-in fade-in">
+            <div className="flex items-center gap-1.5 font-bold text-amber-900">
+              <ShieldCheck className="w-4 h-4 text-amber-700 shrink-0" />
+              <span>Configuration Required</span>
             </div>
-            <p className="text-[11px] text-blue-800 leading-relaxed">
-              {supabaseNotice}
+            <p className="text-[11px] text-amber-800 leading-relaxed">
+              Supabase authentication is not configured. Please check the environment variables in frontend/.env.
             </p>
           </div>
         )}

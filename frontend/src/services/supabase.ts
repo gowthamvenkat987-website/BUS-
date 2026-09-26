@@ -1,21 +1,37 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim() || 'https://hcmubpndtdkhowewpyeb.supabase.co';
-const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim() || '';
+// Read Vite environment variables
+const rawSupabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const rawSupabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-// Initialize Supabase Client with anon key
-export const supabase = createClient(
-  supabaseUrl,
-  supabaseAnonKey && supabaseAnonKey !== 'YOUR_SUPABASE_PUBLIC_KEY'
-    ? supabaseAnonKey
-    : 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.placeholder'
-);
+// Clean and validate environment variables (trim accidental spaces/newlines/quotes)
+const cleanUrl = typeof rawSupabaseUrl === 'string'
+  ? rawSupabaseUrl.trim().replace(/^["']|["']$/g, '').replace(/\/+$/, '')
+  : '';
+
+const cleanKey = typeof rawSupabaseKey === 'string'
+  ? rawSupabaseKey.trim().replace(/^["']|["']$/g, '')
+  : '';
 
 export const isSupabaseConfigured = (): boolean => {
   return Boolean(
-    supabaseUrl &&
-    supabaseAnonKey &&
-    supabaseAnonKey !== 'YOUR_SUPABASE_PUBLIC_KEY' &&
-    !supabaseAnonKey.includes('YOUR_SUPABASE')
+    cleanUrl &&
+    cleanKey &&
+    cleanUrl.startsWith('https://') &&
+    cleanKey.length > 10 &&
+    !cleanKey.includes('YOUR_SUPABASE')
   );
 };
+
+// Valid project endpoint fallback for safe initialization without throwing
+const PROJECT_URL = cleanUrl || 'https://nhkgmslvacuypmkhsiod.supabase.co';
+const PROJECT_KEY = cleanKey || 'sb_publishable_cOYXlrSaCyc9eByIyFF0eQ_LjesUzal';
+
+// Single Supabase Client instance initialized across the application
+export const supabase: SupabaseClient = createClient(PROJECT_URL, PROJECT_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});

@@ -1,16 +1,8 @@
 import { RouteItem, AttendanceSession, Recommendation, AIAlert, Vehicle, College } from '../types';
 import { INITIAL_ROUTES, INITIAL_SESSIONS, INITIAL_RECOMMENDATIONS, INITIAL_ALERTS, INITIAL_VEHICLES, INITIAL_COLLEGES } from '../data/mockData';
+import { supabase, isSupabaseConfigured } from './supabase';
 
 const BASE_URL = '/api';
-
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string | undefined)?.trim();
-const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined)?.trim();
-
-const getSupabaseHeaders = () => ({
-  'apikey': SUPABASE_ANON_KEY || '',
-  'Authorization': `Bearer ${SUPABASE_ANON_KEY || ''}`,
-  'Content-Type': 'application/json'
-});
 
 // In-browser cache for fallback resilience
 let localRoutes: RouteItem[] = [...INITIAL_ROUTES];
@@ -23,15 +15,10 @@ let localAttendancePct = 91;
 export const api = {
   // Colleges
   async getColleges(): Promise<College[]> {
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    if (isSupabaseConfigured()) {
       try {
-        const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/colleges?select=*`, {
-          headers: getSupabaseHeaders()
-        });
-        if (sbRes.ok) {
-          const data = await sbRes.json();
-          if (Array.isArray(data) && data.length > 0) return data;
-        }
+        const { data, error } = await supabase.from('colleges').select('*');
+        if (!error && Array.isArray(data) && data.length > 0) return data;
       } catch (err) {
         console.warn('Supabase fetch for colleges failed, using fallback:', err);
       }
@@ -51,17 +38,12 @@ export const api = {
 
   // Routes
   async getRoutes(): Promise<RouteItem[]> {
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+    if (isSupabaseConfigured()) {
       try {
-        const sbRes = await fetch(`${SUPABASE_URL}/rest/v1/routes?select=*`, {
-          headers: getSupabaseHeaders()
-        });
-        if (sbRes.ok) {
-          const data = await sbRes.json();
-          if (Array.isArray(data) && data.length > 0) {
-            localRoutes = data;
-            return data;
-          }
+        const { data, error } = await supabase.from('routes').select('*');
+        if (!error && Array.isArray(data) && data.length > 0) {
+          localRoutes = data;
+          return data;
         }
       } catch (err) {
         console.warn('Supabase fetch for routes failed, using fallback:', err);
