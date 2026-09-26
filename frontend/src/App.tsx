@@ -31,14 +31,24 @@ export function App() {
   // Check Supabase session on mount
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setCurrentUser(session?.user ?? null);
+      const user = session?.user ?? null;
+      setCurrentUser(user);
+      if (user) {
+        const metaRole = (user.user_metadata?.role || user.app_metadata?.role || 'ADMIN').toUpperCase() as UserRole;
+        setUserRole(metaRole);
+      }
       setIsAuthLoading(false);
     }).catch(() => {
       setIsAuthLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setCurrentUser(session?.user ?? null);
+      const user = session?.user ?? null;
+      setCurrentUser(user);
+      if (user) {
+        const metaRole = (user.user_metadata?.role || user.app_metadata?.role || 'ADMIN').toUpperCase() as UserRole;
+        setUserRole(metaRole);
+      }
       setIsAuthLoading(false);
     });
 
@@ -158,6 +168,8 @@ export function App() {
       <LoginPage 
         onLoginSuccess={(user) => {
           setCurrentUser(user);
+          const metaRole = (user.user_metadata?.role || user.app_metadata?.role || 'ADMIN').toUpperCase() as UserRole;
+          setUserRole(metaRole);
         }} 
       />
     );
@@ -168,8 +180,8 @@ export function App() {
       {/* Universal Header (NRIIT Only) with Mobile Menu Toggle and Logout */}
       <Header
         college={college}
+        currentUser={currentUser}
         userRole={userRole}
-        onChangeRole={(r) => setUserRole(r)}
         unreadAlertsCount={unreadAlertsCount}
         onOpenAlerts={() => setActiveTab('ai-alerts')}
         isMobileMenuOpen={isMobileMenuOpen}

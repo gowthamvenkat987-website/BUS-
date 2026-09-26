@@ -1,15 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Bus, ArrowRight, ShieldCheck, RefreshCw, AlertCircle, Phone, ArrowLeft, CheckCircle2, KeyRound } from 'lucide-react';
+import { Bus, ArrowRight, ShieldCheck, RefreshCw, AlertCircle, Phone, Mail, ArrowLeft, CheckCircle2, KeyRound } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabase';
+
+type AuthMethod = 'PHONE' | 'EMAIL';
+type AuthStep = 'INPUT' | 'OTP';
 
 interface LoginPageProps {
   onLoginSuccess: (user: any) => void;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
-  const [step, setStep] = useState<'PHONE' | 'OTP'>('PHONE');
-  const [countryCode, setCountryCode] = useState('+91');
+  const [authMethod, setAuthMethod] = useState<AuthMethod>('PHONE');
+  const [step, setStep] = useState<AuthStep>('INPUT');
+  const [countryCode] = useState('+91');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -31,11 +36,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     return () => clearTimeout(timer);
   }, [step, countdown]);
 
-  // Clean phone number format
+  // Clean phone and email formats
   const cleanPhone = phoneNumber.replace(/\D/g, '');
   const fullPhone = `${countryCode}${cleanPhone}`;
+  const cleanEmail = email.trim().toLowerCase();
 
-  // Masked phone format for OTP screen: +91 98XXX XX321 or +91 XXXXX XXXXX
+  // Masked phone format for OTP screen: +91 98XXX XX321
   const getMaskedPhone = () => {
     if (cleanPhone.length >= 10) {
       const first2 = cleanPhone.slice(0, 2);
@@ -45,16 +51,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     return `${countryCode} XXXXX XXXXX`;
   };
 
-  // STEP 1: Send OTP via Supabase Auth
+  // Switch authentication method
+  const handleSelectAuthMethod = (method: AuthMethod) => {
+    setAuthMethod(method);
+    setStep('INPUT');
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setSupabaseNotice(null);
+    setOtp(['', '', '', '', '', '']);
+  };
+
+  // STEP 1: Send Real OTP via Supabase Auth
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
     setSupabaseNotice(null);
 
-    if (cleanPhone.length !== 10) {
-      setErrorMessage('Please enter a valid 10-digit mobile number.');
-      return;
+    if (authMethod === 'PHONE') {
+      if (cleanPhone.length !== 10) {
+        setErrorMessage('Please enter a valid 10-digit mobile number.');
+        return;
+      }
+    } else {
+      if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+        setErrorMessage('Please enter a valid email address.');
+        return;
+      }
     }
 
     setIsLoading(true);
@@ -62,37 +85,50 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     try {
       if (!isSupabaseConfigured()) {
         setSupabaseNotice(
-          'Demo Mode: Supabase live SMS provider is inactive. You can use test OTP 123456 or 1-Click Demo Login below.'
+          'Supabase anon key is currently placeholder in frontend/.env. Set VITE_SUPABASE_ANON_KEY to your Supabase public API key to enable live OTP delivery.'
         );
-        setSuccessMessage('Demo OTP sent. Use 123456 to verify.');
-        setStep('OTP');
-        setOtp(['1', '2', '3', '4', '5', '6']);
-        setCountdown(30);
-        setCanResend(false);
-        setIsLoading(false);
-        return;
       }
 
-      // Invoke Supabase Phone Auth
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: fullPhone
-      });
+      let error = null;
+
+      if (authMethod === 'PHONE') {
+        // Send real SMS OTP via Supabase Phone Auth
+        const res = await supabase.auth.signInWithOtp({
+          phone: fullPhone
+        });
+        error = res.error;
+      } else {
+        // Send real Email OTP via Supabase passwordless Auth
+        const res = await supabase.auth.signInWithOtp({
+          email: cleanEmail,
+          options: {
+            shouldCreateUser: true
+          }
+        });
+        error = res.error;
+      }
 
       if (error) {
-        // If Supabase phone provider is unconfigured or returns API error, fallback to demo OTP mode
-        setSupabaseNotice(
-          `Live SMS Notice: ${error.message}. Demo mode is active: use test OTP 123456 or 1-Click Demo Login below.`
-        );
-        setSuccessMessage('Demo OTP available: Use 123456 to verify.');
-        setStep('OTP');
-        setOtp(['1', '2', '3', '4', '5', '6']);
-        setCountdown(30);
-        setCanResend(false);
+        if (error.message.toLowerCase().includes('api key') || error.message.toLowerCase().includes('jwt')) {
+          setSupabaseNotice(
+            `Supabase Configuration Error: ${error.message}. Please configure a valid VITE_SUPABASE_ANON_KEY in frontend/.env.`
+          );
+        } else if (authMethod === 'PHONE' && (error.message.toLowerCase().includes('provider') || error.message.toLowerCase().includes('sms'))) {
+          setSupabaseNotice(
+            `Supabase Phone Provider: ${error.message}. Ensure an SMS Provider (Twilio/MessageBird) is enabled in your Supabase dashboard under Authentication > Providers > Phone.`
+          );
+        } else if (authMethod === 'EMAIL' && error.message.toLowerCase().includes('provider')) {
+          setSupabaseNotice(
+            `Supabase Email Provider: ${error.message}. Ensure Email provider is enabled in your Supabase dashboard under Authentication > Providers > Email.`
+          );
+        }
+        setErrorMessage(error.message);
       } else {
         setSuccessMessage('OTP sent successfully.');
         setStep('OTP');
         setCountdown(30);
         setCanResend(false);
+        setOtp(['', '', '', '', '', '']);
         setTimeout(() => {
           otpInputsRef.current[0]?.focus();
         }, 100);
@@ -104,13 +140,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  // STEP 2: Verify OTP via Supabase Auth
+  // STEP 2: Verify Real OTP via Supabase Auth
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setSuccessMessage(null);
 
-    const token = otp.join('');
+    const token = otp.join('').trim();
     if (token.length !== 6) {
       setErrorMessage('Please enter the complete 6-digit OTP.');
       return;
@@ -118,40 +154,38 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
     setIsLoading(true);
 
-    // Fast-path demo OTP support
-    if (token === '123456' || !isSupabaseConfigured()) {
-      setSuccessMessage('Login successful (Demo Mode).');
-      setTimeout(() => {
-        onLoginSuccess({
-          id: 'demo-admin-01',
-          phone: fullPhone || '+91 98765 43210',
-          role: 'ADMIN',
-          email: 'admin@smarttransit.com',
-          user_metadata: { role: 'ADMIN' }
-        });
-      }, 350);
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: fullPhone,
-        token,
-        type: 'sms'
-      });
+      let result;
+      if (authMethod === 'PHONE') {
+        result = await supabase.auth.verifyOtp({
+          phone: fullPhone,
+          token,
+          type: 'sms'
+        });
+      } else {
+        result = await supabase.auth.verifyOtp({
+          email: cleanEmail,
+          token,
+          type: 'email'
+        });
+      }
+
+      const { data, error } = result;
 
       if (error) {
         if (error.message.toLowerCase().includes('expired')) {
-          setErrorMessage('OTP expired. Please request a new OTP.');
+          setErrorMessage('OTP expired. Request a new OTP.');
         } else {
-          setErrorMessage('Invalid OTP. Please try again or use 123456.');
+          setErrorMessage('Invalid OTP. Please try again.');
         }
-      } else {
-        setSuccessMessage('Login successful.');
+      } else if (data?.session?.user || data?.user) {
+        setSuccessMessage('Authentication successful.');
+        const authenticatedUser = data.session?.user || data.user;
         setTimeout(() => {
-          onLoginSuccess(data.user || data.session?.user || { phone: fullPhone, role: 'ADMIN' });
+          onLoginSuccess(authenticatedUser);
         }, 500);
+      } else {
+        setErrorMessage('Verification failed. Please try again.');
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'Verification failed. Please try again.');
@@ -160,22 +194,30 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }
   };
 
-  // Resend OTP
+  // Resend Real OTP via Supabase Auth
   const handleResendOtp = async () => {
-    if (!canResend) return;
+    if (!canResend || isLoading) return;
     setErrorMessage(null);
     setSuccessMessage(null);
     setIsLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: fullPhone
-      });
+      let error = null;
+      if (authMethod === 'PHONE') {
+        const res = await supabase.auth.signInWithOtp({ phone: fullPhone });
+        error = res.error;
+      } else {
+        const res = await supabase.auth.signInWithOtp({
+          email: cleanEmail,
+          options: { shouldCreateUser: true }
+        });
+        error = res.error;
+      }
 
       if (error) {
         setErrorMessage(error.message);
       } else {
-        setSuccessMessage('OTP resent successfully.');
+        setSuccessMessage('OTP sent successfully.');
         setCountdown(30);
         setCanResend(false);
         setOtp(['', '', '', '', '', '']);
@@ -190,15 +232,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
   // Handle OTP input change with auto-focus to next box
   const handleOtpChange = (index: number, value: string) => {
-    // Only accept numeric characters
     const numericVal = value.replace(/\D/g, '');
     const newOtp = [...otp];
 
     if (numericVal.length > 0) {
-      newOtp[index] = numericVal[numericVal.length - 1]; // take the last typed digit
+      newOtp[index] = numericVal[numericVal.length - 1];
       setOtp(newOtp);
 
-      // Auto-focus to next input
       if (index < 5) {
         otpInputsRef.current[index + 1]?.focus();
       }
@@ -229,7 +269,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }
     setOtp(newOtp);
 
-    // Focus last filled input or next empty input
     const nextIndex = Math.min(pastedData.length, 5);
     otpInputsRef.current[nextIndex]?.focus();
   };
@@ -259,11 +298,45 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </div>
         </div>
 
+        {/* Authentication Method Selector (Only in INPUT step) */}
+        {step === 'INPUT' && (
+          <div className="mt-6 mb-5">
+            <div className="flex bg-slate-100 p-1 rounded-xl">
+              <button
+                type="button"
+                id="tab-auth-phone"
+                onClick={() => handleSelectAuthMethod('PHONE')}
+                className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  authMethod === 'PHONE'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>Mobile Number</span>
+              </button>
+              <button
+                type="button"
+                id="tab-auth-email"
+                onClick={() => handleSelectAuthMethod('EMAIL')}
+                className={`flex-1 py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  authMethod === 'EMAIL'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>Email</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Step Indicator */}
-        <div className="mt-6 mb-4">
+        <div className={step === 'INPUT' ? 'mb-4' : 'mt-6 mb-4'}>
           <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
-            <span className={step === 'PHONE' ? 'text-blue-600 font-bold' : 'text-slate-400'}>
-              1. Mobile Number
+            <span className={step === 'INPUT' ? 'text-blue-600 font-bold' : 'text-slate-400'}>
+              1. {authMethod === 'PHONE' ? 'Mobile Number' : 'Email Address'}
             </span>
             <span className={step === 'OTP' ? 'text-blue-600 font-bold' : 'text-slate-400'}>
               2. OTP Verification
@@ -271,7 +344,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </div>
           <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
             <div 
-              className={`h-full bg-blue-600 transition-all duration-300 ${step === 'PHONE' ? 'w-1/2' : 'w-full'}`}
+              className={`h-full bg-blue-600 transition-all duration-300 ${step === 'INPUT' ? 'w-1/2' : 'w-full'}`}
             ></div>
           </div>
         </div>
@@ -280,7 +353,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         {errorMessage && (
           <div className="mb-4 bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700 flex items-start gap-2 animate-in fade-in">
             <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-            <span>{errorMessage}</span>
+            <span className="leading-relaxed">{errorMessage}</span>
           </div>
         )}
 
@@ -295,7 +368,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           <div className="mb-4 bg-blue-50 border border-blue-200 rounded-xl p-3 text-xs text-blue-900 space-y-1 animate-in fade-in">
             <div className="flex items-center gap-1.5 font-bold text-blue-900">
               <ShieldCheck className="w-4 h-4 text-blue-700 shrink-0" />
-              <span>Supabase Phone Authentication</span>
+              <span>Supabase Authentication</span>
             </div>
             <p className="text-[11px] text-blue-800 leading-relaxed">
               {supabaseNotice}
@@ -303,52 +376,72 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </div>
         )}
 
-        {/* STEP 1: Phone Number Input */}
-        {step === 'PHONE' && (
+        {/* STEP 1: Input Screen (Mobile Number or Email) */}
+        {step === 'INPUT' && (
           <form onSubmit={handleSendOtp} className="space-y-4">
-            <div>
-              <label className="font-semibold text-slate-700 text-xs block mb-1.5">
-                Sign in with your mobile number
-              </label>
-              
-              <div className="flex gap-2">
-                {/* Country Selector */}
-                <div className="w-24 shrink-0">
-                  <select
-                    value={countryCode}
-                    onChange={(e) => setCountryCode(e.target.value)}
-                    className="w-full min-h-[48px] px-2.5 py-2.5 rounded-xl border border-slate-300 bg-slate-50 font-semibold text-xs text-slate-800 focus:outline-blue-600 cursor-pointer"
-                  >
-                    <option value="+91">🇮🇳 +91 (India)</option>
-                    <option value="+1">🇺🇸 +1 (US)</option>
-                    <option value="+44">🇬🇧 +44 (UK)</option>
-                    <option value="+971">🇦🇪 +971 (UAE)</option>
-                  </select>
-                </div>
+            {authMethod === 'PHONE' ? (
+              <div>
+                <label className="font-semibold text-slate-700 text-xs block mb-1.5">
+                  Country & Mobile Number
+                </label>
+                
+                <div className="flex gap-2">
+                  {/* Fixed Country: India +91 */}
+                  <div className="w-24 shrink-0">
+                    <div className="w-full min-h-[48px] px-2 py-2.5 rounded-xl border border-slate-300 bg-slate-50 font-bold text-xs text-slate-800 flex items-center justify-center gap-1">
+                      <span>🇮🇳 +91</span>
+                    </div>
+                  </div>
 
-                {/* Mobile Number Input */}
-                <div className="relative flex-1">
-                  <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-4 pointer-events-none" />
+                  {/* Mobile Number Input */}
+                  <div className="relative flex-1">
+                    <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-4 pointer-events-none" />
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      required
+                      autoFocus
+                      value={phoneNumber}
+                      onChange={(e) => setPhoneNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                      placeholder="Enter mobile number"
+                      maxLength={10}
+                      className="w-full min-h-[48px] pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-blue-600 focus:border-blue-600 bg-white"
+                    />
+                  </div>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-1.5">
+                  We’ll send a 6-digit OTP to your mobile number.
+                </p>
+              </div>
+            ) : (
+              <div>
+                <label className="font-semibold text-slate-700 text-xs block mb-1.5">
+                  College / Institutional Email
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-4 pointer-events-none" />
                   <input
-                    type="tel"
+                    type="email"
                     required
                     autoFocus
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    placeholder="98765 43210"
-                    maxLength={14}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your college/email address"
                     className="w-full min-h-[48px] pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-blue-600 focus:border-blue-600 bg-white"
                   />
                 </div>
+                <p className="text-[11px] text-slate-500 mt-1.5">
+                  We’ll send a 6-digit OTP to your email address.
+                </p>
               </div>
-              <p className="text-[11px] text-slate-500 mt-1.5">
-                We will send an official 6-digit OTP via SMS for verification.
-              </p>
-            </div>
+            )}
 
             <button
               type="submit"
-              disabled={isLoading || cleanPhone.length !== 10}
+              disabled={
+                isLoading || 
+                (authMethod === 'PHONE' ? cleanPhone.length !== 10 : (!cleanEmail || !cleanEmail.includes('@')))
+              }
               id="btn-send-otp"
               className="w-full min-h-[48px] bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white font-bold py-3 rounded-xl transition shadow-sm flex items-center justify-center gap-2 text-sm cursor-pointer disabled:cursor-not-allowed"
             >
@@ -367,37 +460,43 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           </form>
         )}
 
-        {/* STEP 2: 6-Digit OTP Verification Screen */}
+        {/* STEP 2: 6-Digit Real OTP Verification Screen */}
         {step === 'OTP' && (
           <form onSubmit={handleVerifyOtp} className="space-y-5">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="font-semibold text-slate-700 text-xs block">
-                  Enter the 6-digit OTP sent to {getMaskedPhone()}:
-                </label>
+                <h3 className="font-bold text-slate-800 text-sm">
+                  Verify your OTP
+                </h3>
                 <button
                   type="button"
                   onClick={() => {
-                    setStep('PHONE');
+                    setStep('INPUT');
                     setErrorMessage(null);
                     setSuccessMessage(null);
+                    setOtp(['', '', '', '', '', '']);
                   }}
                   className="text-blue-600 hover:text-blue-800 text-xs font-semibold flex items-center gap-1 cursor-pointer"
                 >
                   <ArrowLeft className="w-3 h-3" />
-                  <span>Change number</span>
+                  <span>{authMethod === 'PHONE' ? 'Change Mobile Number' : 'Change Email'}</span>
                 </button>
               </div>
 
-              {/* Masked Phone Number Display */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 mb-4 flex items-center justify-between text-xs">
-                <span className="font-mono font-bold text-slate-900 tracking-wider">
-                  {getMaskedPhone()}
-                </span>
-                <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>SMS Dispatched</span>
-                </span>
+              {/* Destination Display */}
+              <div className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 mb-4 text-xs">
+                <p className="text-slate-500 text-[11px] mb-0.5">
+                  We sent a 6-digit verification code to:
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono font-bold text-slate-900 tracking-wider text-xs">
+                    {authMethod === 'PHONE' ? getMaskedPhone() : cleanEmail}
+                  </span>
+                  <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{authMethod === 'PHONE' ? 'SMS Dispatched' : 'Email Dispatched'}</span>
+                  </span>
+                </div>
               </div>
 
               {/* 6 Separate OTP Boxes */}
@@ -455,53 +554,15 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 </button>
               ) : (
                 <span className="font-mono text-slate-400 font-semibold">
-                  Resend in {countdown}s
+                  Resend OTP in {countdown}s
                 </span>
               )}
             </div>
           </form>
         )}
 
-        {/* 1-Click Fast Demo Access */}
-        <div className="mt-6 pt-5 border-t border-slate-200">
-          <div className="text-center mb-3">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
-              Fast Demo Access (1-Click)
-            </span>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <button
-              type="button"
-              id="btn-demo-admin"
-              onClick={() => onLoginSuccess({ id: 'demo-admin-01', email: 'admin@smarttransit.com', role: 'ADMIN', user_metadata: { role: 'ADMIN' } })}
-              className="py-2.5 px-2 bg-blue-50 hover:bg-blue-100 active:scale-95 text-blue-800 border border-blue-200 rounded-xl text-xs font-bold transition flex flex-col items-center gap-1 cursor-pointer shadow-2xs"
-            >
-              <ShieldCheck className="w-4 h-4 text-blue-600" />
-              <span>Admin</span>
-            </button>
-            <button
-              type="button"
-              id="btn-demo-faculty"
-              onClick={() => onLoginSuccess({ id: 'demo-faculty-01', email: 'faculty@nriit.edu.in', role: 'FACULTY', user_metadata: { role: 'FACULTY' } })}
-              className="py-2.5 px-2 bg-slate-50 hover:bg-slate-100 active:scale-95 text-slate-800 border border-slate-200 rounded-xl text-xs font-bold transition flex flex-col items-center gap-1 cursor-pointer shadow-2xs"
-            >
-              <KeyRound className="w-4 h-4 text-slate-600" />
-              <span>Faculty</span>
-            </button>
-            <button
-              type="button"
-              id="btn-demo-student"
-              onClick={() => onLoginSuccess({ id: 'demo-student-01', email: 'student@nriit.edu.in', role: 'STUDENT', user_metadata: { role: 'STUDENT' } })}
-              className="py-2.5 px-2 bg-emerald-50 hover:bg-emerald-100 active:scale-95 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold transition flex flex-col items-center gap-1 cursor-pointer shadow-2xs"
-            >
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-              <span>Student</span>
-            </button>
-          </div>
-        </div>
-
         {/* Footer Info */}
-        <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+        <div className="mt-6 pt-4 border-t border-slate-100 text-center">
           <p className="text-[11px] text-slate-400">
             Protected by Supabase Auth • NRI Institute of Technology Transit Gate
           </p>
