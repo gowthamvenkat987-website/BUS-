@@ -76,8 +76,8 @@ export const AttendancePage: React.FC<AttendancePageProps> = ({
             <h1 className="text-2xl font-extrabold text-slate-900 font-['Outfit']">
               Attendance Intelligence
             </h1>
-            <span className="bg-amber-100 text-amber-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-amber-200">
-              Demo / Simulated Attendance Data
+            <span className="bg-blue-100 text-blue-800 text-xs font-bold px-2.5 py-0.5 rounded-full border border-blue-200">
+              Active Campus Presence Feed
             </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-600 mt-1">

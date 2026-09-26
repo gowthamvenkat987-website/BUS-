@@ -57,10 +57,9 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="bg-slate-900 text-slate-200 px-3 sm:px-4 py-1 text-[11px] sm:text-xs flex items-center justify-between border-b border-slate-800 w-full overflow-hidden">
         <div className="flex items-center gap-1.5 sm:gap-2 truncate">
           <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-          <span className="font-semibold text-slate-100 hidden sm:inline">Campus Transport System:</span>
           <span className="truncate">NRIIT, Pothavarappadu, Vijayawada</span>
           <span className="text-slate-500 hidden md:inline">|</span>
-          <span className="text-amber-300 font-medium hidden md:inline">⚠ Demo Data</span>
+          <span className="text-emerald-400 font-medium hidden md:inline">● Live Operations</span>
         </div>
         <div className="flex items-center gap-2 text-[10px] sm:text-[11px] text-slate-300 shrink-0 ml-2">
           <span className="bg-blue-900/60 text-blue-300 px-1.5 py-0.5 rounded border border-blue-700/50">

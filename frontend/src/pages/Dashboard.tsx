@@ -191,8 +191,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <span className="text-[11px] bg-slate-100 text-slate-600 font-mono px-2.5 py-1 rounded-md border border-slate-200">
               Prediction: Next 30m
             </span>
-            <span className="text-[11px] bg-amber-50 text-amber-700 font-bold px-2.5 py-1 rounded-md border border-amber-200">
-              DEMO / SIMULATED DATA
+            <span className="text-[11px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-1 rounded-md border border-emerald-200">
+              TELEMETRY SYNCHRONIZED
             </span>
           </div>
         </div>
